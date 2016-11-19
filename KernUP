@@ -1,0 +1,182 @@
+#!/bin/bash
+
+Version="0.1";
+
+AppData="$HOME/.KernUP";
+TempData="$AppData/Temp";
+InstallDir="/usr/local/bin";
+AppName="kernup";
+InstallService="kernup-install";
+Kernel_Installed=$(uname -r | cut -d "-" -f1 | sort -V | cut -d "." -f1,2,3 | tail -n 1);
+Architecture=`uname -m`;
+Server_Version=$(wget "http://github.com/DamiaX/KernUP/Version/" -q -O -);
+Core_Url="http://github.com/DamiaX/KernUP/KernUP.sh";
+Lang_pl=$(wget "" -q -O -);
+
+InstallApp()
+{
+mv $0 $AppData/$AppName;
+chmod +x $AppData/$AppName;
+sudo ln -s $AppData/$AppName $InstallDir/$AppName;
+}
+
+Create_Data()
+{
+mkdir -p $AppData;
+mkdir -p $TempData;
+}
+
+Check_Distro()
+{
+if [[ "$(lsb_release -si)" != "Ubuntu" && "$(lsb_release -si)" != "LinuxMint" && "$(lsb_release -si)" != "elementary OS" && "$(lsb_release -si)" != "Debian" && "$(lsb_release -si)" != "elementary"  ]] ; then
+echo -e -n "\E[$Alert;1m$Information\033[0m"; 
+echo -e -n "\E[$Wow;1m $Dist\033[0m \n";
+   exit;
+fi
+}
+
+Color()
+{
+Alert='33';
+Text='36';
+Wow='31';
+Suprise='34';
+Action='32';
+}
+
+Refresh_System()
+{
+echo -e -n "\E[$Alert;1m$Information\033[0m"; 
+echo -e -n "\E[$Text;1m $Systemlng \040 \n"; 
+sudo apt-get update -y -qq;
+sudo apt-get upgrade -y -qq;	
+}
+
+Welcome()
+{
+clear;
+echo -e -n "\E[28;1m [[ KernUP:\040"; echo -e -n "\E[31;1m$Version \033[0m"; echo -e -n "\E[28;1m ]] -\040" ; echo -e -n "\E[$Alert;1m$EGGlng\033[0m \n"; 
+}
+
+App_Update()
+{
+New_Version=$(echo $Server_Version | tr '.' ',' | sed -e 's@,@@g');
+Actual_Version=$(echo $Version | tr '.' ',' | sed -e 's@,@@g');
+if [ $Actual_Version != $New_Version ]
+then
+echo -e -n "\E[$Alert;1m$Information\033[0m"; 
+echo -e -n "\E[$Wow;1m $Updatelng\033[0m \n";
+
+Download_Version=$(wget $Core_url -q -O -);
+
+echo $Download_Version > $AppData/$AppName;
+
+echo -e -n "\E[$Alert;1m$Information\033[0m"; 
+echo -e -n "\E[$Action;1m $Rebotlng \040 \n";
+exit;
+fi
+}
+
+Get_Link()
+{
+Kernel_List_Get=$(wget "http://kernel.ubuntu.com/~kernel-ppa/mainline" -q -O -); 
+Kernel_Latest_Version=$(echo $Kernel_List_Get | sed -e 's@<a href="@ http://KernUP/@g' | sed -e 's@/">@ @g' | 
+sed -e 's@[[:space:]]@\n@g' | sed -e '/^[ \t]*$/ d'  | grep 'http://KernUP/v' | sed -e "s@http://KernUP/@@g" | grep -v rc | sed -e "s@v@@g" |
+awk 'function maxelt(vec,   i, ret) {
+for (i in vec) 
+{
+if (ret == "" || vec[i] > ret)
+               ret = vec[i]
+     }
+     return ret
+}
+
+{
+     for(i = 1; i <= NF; i++)
+          nums[NR, i] = $i
+}
+
+END {
+     print maxelt(nums)
+}'
+);
+
+Latest_Kernel_List=$(wget "http://kernel.ubuntu.com/~kernel-ppa/mainline/v$Kernel_Latest_Version" -q -O - );
+Kernel_Link=$(echo $Latest_Kernel_List | sed -e's@~~~@@g' | sed -e "s@^@http://kernel.ubuntu.com/~kernel-ppa/mainline/$Latest_Kernel/@g" | sed -e 's@<a href="linux@ <arch>http://kernel.ubuntu.com/~kernel-ppa/mainline/v@g' | sed -e "s@<arch>http://kernel.ubuntu.com/~kernel-ppa/mainline/v@ \n <arch>http://kernel.ubuntu.com/~kernel-ppa/mainline/v$Kernel_Latest_Version/linux@g" | sed -e '0,/\(^\<arch>\)/s//\n\1/');
+Kernel_Link_Architecture=$(echo $Kernel_Link | sed -e "s@_amd64.deb@</arch> @g" | sed -e "s@_i386.deb@</arch> @g" | sed -e "s@_all.deb@_all.deb</arch> @g" | awk -vRS="</arch>" '{gsub(/.*<arch.*>/,"");print}' | grep "http://" | tr ' ' '\n');
+Headers_Download_Url_Generic=$(echo $Kernel_Link_Architecture | tr ' ' '\n' | grep "headers" | grep "generic" | sed -n -e '1p');
+Image_Download_Url_Generic=$(echo $Kernel_Link_Architecture | tr ' ' '\n' | grep "image" | grep "generic" | sed -n -e '1p');
+Headers_Download_Url_Lowlatency=$(echo $Kernel_Link_Architecture | tr ' ' '\n' | grep "headers" | grep "lowlatency" | sed -n -e '1p');
+Image_Download_Url_Lowlatency=$(echo $Kernel_Link_Architecture | tr ' ' '\n' | grep "image" | grep "lowlatency" | sed -n -e '1p');
+Kernel_Download_Url_All=$(echo $Kernel_Link_Architecture | tr ' ' '\n' | grep "all" | sed -n -e '1p');
+}
+
+Install_Kernel()
+{
+Refresh_System;
+echo -e -n "\E[$Alert;1m$Information\033[0m"; 
+echo -e -n "\E[$Action;1m $Installng \040 \n";
+echo -e -n "\E[39;1 m\033[0m"; 
+sudo dpkg -i *.deb;
+
+if [ $? == 0 ] ; then
+echo -e -n "\E[$Alert;1m$Information\033[0m"; 
+echo -e -n "\E[$Action;1m $Successlng \040 \n"; 
+
+else
+echo -e -n "\E[$Alert;1m$Information\033[0m"; 
+echo -e -n "\E[$Wow;1m $Abortlng\033[0m \n"; 
+fi
+cd $HOME;
+rm -rf $TempData;
+}
+
+Download_Kernel()
+{
+if [ $Kernel_Installed = $Kernel_Latest_Version ] ; then
+echo "$Gitlng"
+else 
+echo -e -n "\E[$Alert;1m$Information\033[0m";
+echo -e -n "\E[$Wow;1m $Chicklng \033[0m \n" ;
+echo -e -n "\E[$Alert;1m$Information\033[0m"; 
+echo -e -n "\E[$Text;1m $Momlng \0$Alert[0m"; 
+echo -e -n "\E[$Supeise;1m$Kernel_Installed\033[0m"; 
+echo -e -n "\E[$Text;1m, $Givelng \0$Alert[0m"; 
+echo -e -n "\E[$Supeise;1m$Kernel_Latest_Version\033[0m";
+echo -e -n "\E[$Suprise;1m! \033[0m \n";
+echo -e -n "\E[$Alert;1m$Information\033[0m"; 
+echo -e -n "\E[$Text;1m $Downloadlng \040 \n"; 
+
+cd $TempData;
+ 
+if  [ $Architecture == "x86_64" ] ; then
+wget -q -c "$Headers_Download_Url_Generic"'_amd64.deb';
+wget -q -c "$Image_Download_Url_Generic"'_amd64.deb';
+wget -q -c "$Kernel_Download_Url_All";
+fi
+
+if [ $Architecture == "i686" ] || [ $Architecture == "i386" ] || [ $Architecture == "x86" ] ; then
+wget -q -c "$Headers_Download_Url_Generic"'_i386.deb';
+wget -q -c "$Image_Download_Url_Generic"'_i386.deb';
+wget -q -c "$Kernel_Download_Url_All";
+fi;
+
+echo -e -n "\E[$Alert;1m$Information\033[0m"; 
+echo -e -n "\E[$Text;1m $FinishDownloadlng \040 \n"; 
+Install_Kernel;
+fi;
+}
+
+
+Start()
+{
+source KernUP.language.pl
+Color;
+Welcome;
+Create_Data;
+Get_Link;
+Download_Kernel;
+}
+
+Start;
+echo Damian Majchrzak 2016
