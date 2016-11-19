@@ -1,6 +1,6 @@
 #!/bin/bash
 
-Version="0.1";
+Version="0.2";
 
 AppData="$HOME/.KernUP";
 TempData="$AppData/Temp";
@@ -9,8 +9,8 @@ AppName="kernup";
 InstallService="kernup-install";
 Kernel_Installed=$(uname -r | cut -d "-" -f1 | sort -V | cut -d "." -f1,2,3 | tail -n 1);
 Architecture=`uname -m`;
-Server_Version=$(wget "http://github.com/DamiaX/KernUP/Version/" -q -O -);
-Core_Url="http://github.com/DamiaX/KernUP/KernUP.sh";
+Server_Version=$(wget "https://raw.githubusercontent.com/DamiaX/KernUP/master/Version" -q -O -);
+Core_Url="https://raw.githubusercontent.com/DamiaX/KernUP/master/KernUP";
 Lang_pl=$(wget "" -q -O -);
 
 InstallApp()
@@ -56,6 +56,7 @@ Welcome()
 {
 clear;
 echo -e -n "\E[28;1m [[ KernUP:\040"; echo -e -n "\E[31;1m$Version \033[0m"; echo -e -n "\E[28;1m ]] -\040" ; echo -e -n "\E[$Alert;1m$EGGlng\033[0m \n"; 
+App_Update;
 }
 
 App_Update()
