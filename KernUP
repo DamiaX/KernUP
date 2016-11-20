@@ -1,23 +1,69 @@
 #!/bin/bash
 
-Version="0.2";
+Version="0.3";
 
 AppData="$HOME/.KernUP";
 TempData="$AppData/Temp";
 InstallDir="/usr/local/bin";
 AppName="kernup";
-InstallService="kernup-install";
 Kernel_Installed=$(uname -r | cut -d "-" -f1 | sort -V | cut -d "." -f1,2,3 | tail -n 1);
 Architecture=`uname -m`;
 Server_Version=$(wget "https://raw.githubusercontent.com/DamiaX/KernUP/master/Version" -q -O -);
 Core_Url="https://raw.githubusercontent.com/DamiaX/KernUP/master/KernUP";
-Lang_pl=$(wget "" -q -O -);
+Lang_pl=$(wget "https://raw.githubusercontent.com/DamiaX/KernUP/master/KernUP.pl.lang" -q -O -);
+Lang_Name="KernUP.lang";
 
-InstallApp()
+
+Color()
 {
-mv $0 $AppData/$AppName;
+Alert='33';
+Text='36';
+Wow='31';
+Suprise='34';
+Action='32';
+}
+
+Install_App()
+{
+if [ ! -f "$InstallDir/$AppName" ] ; then
+echo -e -n "\E[$Alert;1m$Information\033[0m"; 
+echo -e -n "\E[$Text;1m $AppInstallng\033[0m ";
+echo -e -n "\E[$Alert;1m $Odplng\033[0m \n";
+
+read Answer;
+Default_Answer;
+
+if [[ $Answer == "T" || $Answer == "t" || $Answer == "y" || $Answer == "Y" ]]; then
+
+cp $0 $AppData/$AppName;
 chmod +x $AppData/$AppName;
 sudo ln -s $AppData/$AppName $InstallDir/$AppName;
+
+fi
+
+fi
+}
+
+Default_Answer()
+{
+if [ -z $Answer ]; then
+Answer='y';
+fi
+}
+
+Language()
+{
+case $LANG in
+*PL*) 
+PL=`echo $Lang_pl > $AppData/$Lang_Name`
+source $AppData/$Lang_Name 
+ ;;
+*) 
+source $Lang_en
+EN=`echo $Lang_en > $AppData/$Lang_Name`
+source $AppData/$Lang_Name 
+ ;;
+esac
 }
 
 Create_Data()
@@ -35,15 +81,6 @@ echo -e -n "\E[$Wow;1m $Dist\033[0m \n";
 fi
 }
 
-Color()
-{
-Alert='33';
-Text='36';
-Wow='31';
-Suprise='34';
-Action='32';
-}
-
 Refresh_System()
 {
 echo -e -n "\E[$Alert;1m$Information\033[0m"; 
@@ -55,8 +92,11 @@ sudo apt-get upgrade -y -qq;
 Welcome()
 {
 clear;
-echo -e -n "\E[28;1m [[ KernUP:\040"; echo -e -n "\E[31;1m$Version \033[0m"; echo -e -n "\E[28;1m ]] -\040" ; echo -e -n "\E[$Alert;1m$EGGlng\033[0m \n"; 
+Color;
+echo -e -n "\E[28;1m [[ KernUP:\040"; echo -e -n "\E[31;1m$Version \033[0m"; echo -e -n "\E[28;1m ]] -\040" ; echo -e -n "\E[$Alert;1m Twoje nowe jajko!\033[0m \n"; 
+Language;
 App_Update;
+Install_App;
 }
 
 App_Update()
@@ -75,6 +115,7 @@ echo $Download_Version > $AppData/$AppName;
 echo -e -n "\E[$Alert;1m$Information\033[0m"; 
 echo -e -n "\E[$Action;1m $Rebotlng \040 \n";
 exit;
+bash $AppName;
 fi
 }
 
@@ -135,7 +176,8 @@ rm -rf $TempData;
 Download_Kernel()
 {
 if [ $Kernel_Installed = $Kernel_Latest_Version ] ; then
-echo "$Gitlng"
+echo -e -n "\E[$Alert;1m$Information\033[0m"; 
+echo -e -n "\E[$Action;1m $Gitlng \040 \n"; 
 else 
 echo -e -n "\E[$Alert;1m$Information\033[0m";
 echo -e -n "\E[$Wow;1m $Chicklng \033[0m \n" ;
@@ -171,13 +213,11 @@ fi;
 
 Start()
 {
-source KernUP.language.pl
-Color;
 Welcome;
-Create_Data;
 Get_Link;
 Download_Kernel;
 }
 
 Start;
-echo Damian Majchrzak 2016
+echo -e -n "\E[$Alert;1m$Information\033[0m"; 
+echo -e -n "\E[$Alert;1mAutor programu: Damian Majchrzak (DamiaX) 2016\033[0m";  
