@@ -1,6 +1,6 @@
 #!/bin/bash
 
-Version="0.3";
+Version="0.4";
 
 AppData="$HOME/.KernUP";
 TempData="$AppData/Temp";
@@ -110,12 +110,12 @@ echo -e -n "\E[$Wow;1m $Updatelng\033[0m \n";
 
 Download_Version=$(wget $Core_Url -q -O -);
 
-echo $Download_Version > $AppData/$AppName;
+echo $Download_Version | tr '.' ',' | > $AppData/$AppName;
 
 echo -e -n "\E[$Alert;1m$Information\033[0m"; 
 echo -e -n "\E[$Action;1m $Rebotlng \040 \n";
 exit;
-bash $AppName;
+$AppName;
 fi
 }
 
