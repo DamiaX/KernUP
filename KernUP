@@ -1,7 +1,6 @@
 #!/bin/bash
 
-Version="0.4";
-
+Version="0.5";
 AppData="$HOME/.KernUP";
 TempData="$AppData/Temp";
 InstallDir="/usr/local/bin";
@@ -11,8 +10,8 @@ Architecture=`uname -m`;
 Server_Version=$(wget "https://raw.githubusercontent.com/DamiaX/KernUP/master/Version" -q -O -);
 Core_Url="https://raw.githubusercontent.com/DamiaX/KernUP/master/KernUP";
 Lang_pl=$(wget "https://raw.githubusercontent.com/DamiaX/KernUP/master/KernUP.pl.lang" -q -O -);
+Download_Version=$(wget $Core_Url -q -O $AppData/$AppName | chmod +x $AppData/$AppName);
 Lang_Name="KernUP.lang";
-
 
 Color()
 {
@@ -29,18 +28,13 @@ if [ ! -f "$InstallDir/$AppName" ] ; then
 echo -e -n "\E[$Alert;1m$Information\033[0m"; 
 echo -e -n "\E[$Text;1m $AppInstallng\033[0m ";
 echo -e -n "\E[$Alert;1m $Odplng\033[0m \n";
-
 read Answer;
 Default_Answer;
-
 if [[ $Answer == "T" || $Answer == "t" || $Answer == "y" || $Answer == "Y" ]]; then
-
 cp $0 $AppData/$AppName;
 chmod +x $AppData/$AppName;
 sudo ln -s $AppData/$AppName $InstallDir/$AppName;
-
 fi
-
 fi
 }
 
@@ -108,14 +102,11 @@ then
 echo -e -n "\E[$Alert;1m$Information\033[0m"; 
 echo -e -n "\E[$Wow;1m $Updatelng\033[0m \n";
 
-Download_Version=$(wget $Core_Url -q -O -);
-
-echo $Download_Version | tr '.' ',' | > $AppData/$AppName;
-
+$Download_Version;
 echo -e -n "\E[$Alert;1m$Information\033[0m"; 
 echo -e -n "\E[$Action;1m $Rebotlng \040 \n";
-exit;
-$AppName;
+bash $AppData/$AppName;
+
 fi
 }
 
@@ -178,6 +169,7 @@ Download_Kernel()
 if [ $Kernel_Installed = $Kernel_Latest_Version ] ; then
 echo -e -n "\E[$Alert;1m$Information\033[0m"; 
 echo -e -n "\E[$Action;1m $Gitlng \040 \n"; 
+
 else 
 echo -e -n "\E[$Alert;1m$Information\033[0m";
 echo -e -n "\E[$Wow;1m $Chicklng \033[0m \n" ;
@@ -210,14 +202,13 @@ Install_Kernel;
 fi;
 }
 
-
 Start()
 {
 Welcome;
 Get_Link;
 Download_Kernel;
+echo -e -n "\E[$Alert;1m$Information\033[0m"; 
+echo -e -n "\E[$Alert;1m Autor:\033[0m ";  echo -e -n "\E[$Supeise;1m Damian Majchrzak (DamiaX)\033[0m"; echo -e "\E[$Text;1m 2016\033[0m";
 }
 
 Start;
-echo -e -n "\E[$Alert;1m$Information\033[0m"; 
-echo -e -n "\E[$Alert;1mAutor programu: Damian Majchrzak (DamiaX) 2016\033[0m";  
