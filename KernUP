@@ -39,7 +39,6 @@ Welcome;
 GetLink;
 sleep 3600;
 done;
-fi
 }
 
 InstallApp()
