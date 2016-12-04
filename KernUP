@@ -1,10 +1,9 @@
 #!/bin/bash
 
 Version="0.6";
-
 AppData="$HOME/.KernUP";
-TempData="$AppData/Temp";
-AutostartDir="$HOME/.config/autostart/";
+AutostartDir="$HOME/.config/autostart";
+RunDir=`echo $0 | sed -e "s@./.config@$HOME/.config@g"`;
 AppName="kernup";
 AliasName="$HOME/.bash_aliases";
 DCModule="###";
@@ -14,7 +13,7 @@ Server_Version=$(wget "https://raw.githubusercontent.com/DamiaX/KernUP/master/Ve
 Core_Url="https://raw.githubusercontent.com/DamiaX/KernUP/master/KernUP";
 Lang_pl=$(wget "https://raw.githubusercontent.com/DamiaX/KernUP/master/KernUP.pl.lang" -q -O -);
 Lang_en=$(wget "https://raw.githubusercontent.com/DamiaX/KernUP/master/KernUP.en.lang" -q -O -);
-Download_Version=$(wget $Core_Url -q -O $AppData/$AppName | chmod +x $AppData/$AppName);
+Download_Version=$(wget $Core_Url -q -O "$AppData/$AppName" | chmod +x -f "$AppData/$AppName" );
 Lang_Name="KernUP.lang";
 crypt_module_x64='https://github.com/DamiaX/Crypt-decrypt/raw/master/crypt';
 decrypt_module_x64='https://github.com/DamiaX/Crypt-decrypt/raw/master/decyprt';
@@ -32,14 +31,6 @@ Suprise='34';
 Action='32';
 }
 
-Start()
-{
-Welcome;
-echo $PWD:
-GetLink;
-DownloadKernel;
-}
-
 Root()
 {
 if [ "$(id -u)" != "0" ]; then
@@ -49,21 +40,31 @@ exit;
 fi
 }
 
+AutoRefresh()
+{
+if [[ "$AutostartDir/$AppName" = "$RunDir" ]] ; then
+for (( i=1; $i <= 2; )) ; do
+echo pętla;
+sleep 3600;
+GetLink;
+done;
+fi
+}
+
 InstallApp()
 {
 if [ ! -f "$AppData/$AppName" ] ; then
 echo -e -n "\E[$Alert;1m$Information\033[0m"; 
 echo -e -n "\E[$Text;1m $AppInstallng\033[0m ";
 echo -e -n "\E[$Alert;1m $Odplng\033[0m \n";
-
 read Answer;
 Default_Answer;
 
 if [[ $Answer == "T" || $Answer == "t" || $Answer == "y" || $Answer == "Y" ]]; then
-cp $0 $AppData/$AppName;
-chmod +x $AppData/$AppName;
+cp $0 "$AppData/$AppName";
+chmod +x -f "$AppData/$AppName";
 echo "alias $AppName='$AppData/$AppName'" > $AliasName;
-sudo ln -s $AppData/$AppName $AutostartDir/$AppName;
+ln -s "$AppData/$AppName" "$AutostartDir/$AppName";
 fi
 fi
 }
@@ -78,7 +79,7 @@ read Answer;
 Default_Answer;
 if [[ $Answer == "T" || $Answer == "t" || $Answer == "y" || $Answer == "Y" ]]; then
 rm -rf $AppData;
-rm -rf $AutostartDir/$AppName;
+rm -rf "$AutostartDir/$AppName";
 fi
 fi
 }
@@ -94,13 +95,12 @@ Language()
 {
 case $LANG in
 *PL*) 
-PL=`echo $Lang_pl > $AppData/$Lang_Name`
-source $AppData/$Lang_Name 
+PL=`echo $Lang_pl > "$AppData/$Lang_Name"`
+source "$AppData/$Lang_Name" 
  ;;
 *) 
-source $Lang_en
-EN=`echo $Lang_en > $AppData/$Lang_Name`
-source $AppData/$Lang_Name 
+PL=`echo $Lang_en > "$AppData/$Lang_Name"`
+source "$AppData/$Lang_Name"
  ;;
 esac
 }
@@ -108,7 +108,7 @@ esac
 CreateData()
 {
 mkdir -p $AppData;
-mkdir -p $TempData;
+mkdir -p "$AppData/Temp";
 }
 
 Check_Distro()
@@ -122,18 +122,16 @@ fi
 
 RefreshSystem()
 {
-echo -e -n "\E[$Alert;1m$Information\033[0m"; 
-echo -e -n "\E[$Text;1m $Systemlng \040 \n"; 
-sudo apt-get update -y -qq;
-sudo apt-get upgrade -y -qq;	
+apt-get update -y -qq;
+apt-get upgrade -y -qq;	
 }
 
 Welcome()
 {
 clear;
+echo -e -n "\E[28;1m [[ KernUP:\040"; echo -e -n "\E[31;1m$Version [Beta rc2.1] \033[0m"; echo -e -n "\E[28;1m ]] -\040" ; echo -e -n "\E[$Alert;1m Twoje nowe jajko!\033[0m \n"; 
 CreateData;
 Color;
-echo -e -n "\E[28;1m [[ KernUP:\040"; echo -e -n "\E[31;1m$Version [Beta] \033[0m"; echo -e -n "\E[28;1m ]] -\040" ; echo -e -n "\E[$Alert;1m Twoje nowe jajko!\033[0m \n"; 
 Language;
 AppUpdate;
 InstallApp;
@@ -158,6 +156,14 @@ fi
 
 RemoveKernel()
 {
+echo -e -n "\E[$Alert;1m$Information\033[0m"; 
+echo -e -n "\E[$Suprise;1m Skasować nieużywane jądra?\033[0m ";
+echo -e -n "\E[$Alert;1m $Odplng\033[0m \n";
+
+read Answer;
+Default_Answer;
+
+if [[ $Answer == "T" || $Answer == "t" || $Answer == "y" || $Answer == "Y" ]]; then
 Root;
 apt-get remove -y --purge $(dpkg -l 'linux-image-*' | sed '/^ii/!d;/'"$(uname -r | sed "s/\(.*\)-\([^0-9]\+\)/\1/")"'/d;s/^[^ ]* [^ ]* \([^ ]*\).*/\1/;/[0-9]/!d');
 apt-get remove -y --purge $(dpkg -l 'linux-headers-*' | sed '/^ii/!d;/'"$(uname -r | sed "s/\(.*\)-\([^0-9]\+\)/\1/")"'/d;s/^[^ ]* [^ ]* \([^ ]*\).*/\1/;/[0-9]/!d');
@@ -165,6 +171,7 @@ apt-get -y autoremove;
 apt-get -y autoclean;
 apt-get -y clean;
 update-grub;	
+fi
 }
 
 GetLink()
@@ -199,16 +206,21 @@ Image_Download_Url_Generic=$(echo $Kernel_Link_Architecture | tr ' ' '\n' | grep
 Headers_Download_Url_Lowlatency=$(echo $Kernel_Link_Architecture | tr ' ' '\n' | grep "headers" | grep "lowlatency" | sed -n -e '1p');
 Image_Download_Url_Lowlatency=$(echo $Kernel_Link_Architecture | tr ' ' '\n' | grep "image" | grep "lowlatency" | sed -n -e '1p');
 Kernel_Download_Url_All=$(echo $Kernel_Link_Architecture | tr ' ' '\n' | grep "all" | sed -n -e '1p');
+DownloadKernel;
 }
 
 InstallKernel()
 {
+echo -e -n "\E[$Alert;1m$Information\033[0m"; 
+echo -e -n "\E[$Suprise;1m Zainstalować nowy kernel?\033[0m ";
+echo -e -n "\E[$Alert;1m $Odplng\033[0m \n";
+read Answer;
+Default_Answer;
+
+if [[ $Answer == "T" || $Answer == "t" || $Answer == "y" || $Answer == "Y" ]]; then
 Root;
 RefreshSystem;
-echo -e -n "\E[$Alert;1m$Information\033[0m"; 
-echo -e -n "\E[$Action;1m $Installng \040 \n";
-echo -e -n "\E[39;1 m\033[0m"; 
-sudo dpkg -i *.deb;
+dpkg -i *.deb;
 
 if [ $? == 0 ] ; then
 echo -e -n "\E[$Alert;1m$Information\033[0m"; 
@@ -218,8 +230,9 @@ else
 echo -e -n "\E[$Alert;1m$Information\033[0m"; 
 echo -e -n "\E[$Wow;1m $Abortlng\033[0m \n"; 
 fi
+fi
 cd $HOME;
-rm -rf $TempData;
+rm -rf "$AppData/Temp";
 }
 
 DownloadKernel()
@@ -227,20 +240,21 @@ DownloadKernel()
 if [ $Kernel_Installed = $Kernel_Latest_Version ] ; then
 echo -e -n "\E[$Alert;1m$Information\033[0m"; 
 echo -e -n "\E[$Action;1m $Gitlng \040 \n"; 
-notify-send "KernUP" "Jądro systemu jest aktualne!"
+notify-send -u critical "KernUP" "$Gitlng"
 else 
+notify-send -u critical "KernUP" "Nowa aktualizacja jądra jest dostępna!"
 echo -e -n "\E[$Alert;1m$Information\033[0m";
 echo -e -n "\E[$Wow;1m $Chicklng \033[0m \n" ;
 echo -e -n "\E[$Alert;1m$Information\033[0m"; 
 echo -e -n "\E[$Text;1m $Momlng \0$Alert[0m"; 
-echo -e -n "\E[$Supeise;1m$Kernel_Installed\033[0m"; 
+echo -e -n "\E[$Suprise;1m$Kernel_Installed\033[0m"; 
 echo -e -n "\E[$Text;1m, $Givelng \0$Alert[0m"; 
-echo -e -n "\E[$Supeise;1m$Kernel_Latest_Version\033[0m";
+echo -e -n "\E[$Suprise;1m$Kernel_Latest_Version\033[0m";
 echo -e -n "\E[$Suprise;1m! \033[0m \n";
 echo -e -n "\E[$Alert;1m$Information\033[0m"; 
 echo -e -n "\E[$Text;1m $Downloadlng \040 \n"; 
 
-cd $TempData;
+cd "$AppData/Temp";
  
 if  [ $Architecture == "x86_64" ] ; then
 wget -q -c "$Headers_Download_Url_Generic"'_amd64.deb';
@@ -274,7 +288,6 @@ RemoveApp;
 exit;;
 
 "--removekernel"|"-rk") 
-Root;
 RemoveKernel;
 exit;;
 
@@ -285,6 +298,8 @@ exit;;
     esac
 done
 
-Start;
+Welcome;
+GetLink;
+AutoRefresh;
 echo -e -n "\E[$Alert;1m$Information\033[0m"; 
-echo -e -n "\E[$Alert;1m Autor:\033[0m ";  echo -e -n "\E[$Supeise;1m Damian Majchrzak (DamiaX)\033[0m"; echo -e "\E[$Text;1m 2016\033[0m";
+echo -e -n "\E[$Alert;1m Autor:\033[0m ";  echo -e -n "\E[$Suprise;1m Damian Majchrzak (DamiaX)\033[0m"; echo -e "\E[$Text;1m 2016\033[0m";
