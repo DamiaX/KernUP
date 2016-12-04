@@ -2,7 +2,6 @@
 
 Version="0.7";
 AppData="$HOME/.KernUP";
-RunDir=`echo $0 | sed -e "s@./.config@$HOME/.config@g"`;
 AppName="kernup";
 AliasName="$HOME/.bash_aliases";
 DCModule="###";
@@ -48,7 +47,7 @@ echo -e -n "\E[$Alert;1m$Information\033[0m";
 echo -e -n "\E[$Text;1m $AppInstallng\033[0m ";
 echo -e "\E[$Alert;1m $Odplng\033[0m";
 read Answer;
-Default_Answer;
+Default_Answer "t";
 
 if [[ $Answer == "T" || $Answer == "t" || $Answer == "y" || $Answer == "Y" ]]; then
 cp $0 "$AppData/$AppName";
@@ -64,23 +63,42 @@ fi
 
 RemoveApp()
 {
-if [ -f "$InstallDir/$AppName" ] ; then
+if [ -f "$AppData/$AppName" ] ; then
 echo -e -n "\E[$Alert;1m$Information\033[0m"; 
 echo -e -n "\E[$Text;1m Chcesz skasowac aplikacje?\033[0m ";
 echo -e "\E[$Alert;1m $Odplng\033[0m";
 read Answer;
-Default_Answer;
+Default_Answer "t";
 if [[ $Answer == "T" || $Answer == "t" || $Answer == "y" || $Answer == "Y" ]]; then
+sed -i "s@alias $AppName='$AppData/$AppName'@@g" $AliasName;
+crontab -l > "$AppData/Temp/cronfile";
+sed -i "s#@reboot $AppData/$AppName -au##g" "$AppData/Temp/cronfile";
+crontab "$AppData/Temp/cronfile";
 rm -rf $AppData;
-rm -rf "$AutostartDir/$AppName";
 fi
 fi
 }
 
-Default_Answer()
+
+Test_network()
+{
+touch "ping" "$AppData/Temp/ping"
+url=$(ping -c1 "google.com" > "$AppData/Temp/ping" 2>&1)
+
+if [ "$?" = "2" ];
+then
+echo "Brak neta!";
+rm -rf "$AppData/Temp/ping"
+exit;
+fi
+rm -rf "$AppData/Temp/ping"
+}
+
+
+function Default_Answer()
 {
 if [ -z $Answer ]; then
-Answer='y';
+Answer="$1";
 fi
 }
 
@@ -124,7 +142,8 @@ apt-get upgrade -y -qq;
 Welcome()
 {
 clear;
-echo -e -n "\E[28;1m [[ KernUP uruchomiony w: $RunDir \040"; echo -e -n "\E[31;1m$Version [Beta rc2.5] \033[0m"; echo -e -n "\E[28;1m ]] -\040" ; echo -e "\E[$Alert;1m Twoje nowe jajko!\033[0m"; 
+Test_network;
+echo -e -n "\E[28;1m [[ KernUP uruchomiony w: $0 \040"; echo -e -n "\E[31;1m$Version [Beta rc2.7] \033[0m"; echo -e -n "\E[28;1m ]] -\040" ; echo -e "\E[$Alert;1m Twoje nowe jajko!\033[0m"; 
 CreateData;
 Color;
 Language;
@@ -152,11 +171,11 @@ fi
 RemoveKernel()
 {
 echo -e -n "\E[$Alert;1m$Information\033[0m"; 
-echo -e -n "\E[$Suprise;1m Skasować nieużywane jądra?\033[0m ";
+echo -e -n "\E[$Suprise;1m Skasować nieużywane jądra?\033[0m";
 echo -e "\E[$Alert;1m $Odplng\033[0m";
 
 read Answer;
-Default_Answer;
+Default_Answer "t";
 
 if [[ $Answer == "T" || $Answer == "t" || $Answer == "y" || $Answer == "Y" ]]; then
 Root;
@@ -210,7 +229,7 @@ echo -e -n "\E[$Alert;1m$Information\033[0m";
 echo -e -n "\E[$Suprise;1m Zainstalować nowy kernel?\033[0m";
 echo -e "\E[$Alert;1m $Odplng\033[0m";
 read Answer;
-Default_Answer;
+Default_Answer "t";
 
 if [[ $Answer == "T" || $Answer == "t" || $Answer == "y" || $Answer == "Y" ]]; then
 Root;
@@ -272,7 +291,7 @@ while [ "$1" ] ; do
 Welcome;
 case "$1" in
   "--help"|"-h")
-echo "-u, --uninstall:  Skasuj aplikacje $0";
+echo "-u, --uninstall:  Skasuj aplikacje $AppName";
 echo "-rk, --removekernel:  Skasuj nieuzywane kernele";
 
 exit;;
@@ -289,6 +308,9 @@ exit;;
 AutoRefresh;
 exit;;
 
+"--test"|"-t")
+echo Test;
+exit;;
 *)    
       echo -e "Nieznana opcja."
       exit;
