@@ -9,16 +9,8 @@ AliasName="$HOME/.bash_aliases";
 DCModule="###";
 Kernel_Installed=$(uname -r | cut -d "-" -f1 | sort -V | cut -d "." -f1,2,3 | tail -n 1);
 Architecture=`uname -m`;
-Server_Version=$(wget "https://raw.githubusercontent.com/DamiaX/KernUP/master/Version" -q -O -);
 Core_Url="https://raw.githubusercontent.com/DamiaX/KernUP/master/KernUP";
-Lang_pl=$(wget "https://raw.githubusercontent.com/DamiaX/KernUP/master/KernUP.pl.lang" -q -O -);
-Lang_en=$(wget "https://raw.githubusercontent.com/DamiaX/KernUP/master/KernUP.en.lang" -q -O -);
-Download_Version=$(wget $Core_Url -q -O "$AppData/$AppName" | chmod +x -f "$AppData/$AppName" );
 Lang_Name="KernUP.lang";
-crypt_module_x64='https://github.com/DamiaX/Crypt-decrypt/raw/master/crypt';
-decrypt_module_x64='https://github.com/DamiaX/Crypt-decrypt/raw/master/decyprt';
-crypt_module_x86='https://github.com/DamiaX/Crypt-decrypt/raw/master/crypt_x86';
-decrypt_module_x86='https://github.com/DamiaX/Crypt-decrypt/raw/master/decrypt_x86';
 CryptPass="";
 term="/dev/tty";
 
@@ -95,11 +87,13 @@ Language()
 {
 case $LANG in
 *PL*) 
+Lang_pl=$(wget "https://raw.githubusercontent.com/DamiaX/KernUP/master/KernUP.pl.lang" -q -O -);
 PL=`echo $Lang_pl > "$AppData/$Lang_Name"`
 source "$AppData/$Lang_Name" 
  ;;
 *) 
-PL=`echo $Lang_en > "$AppData/$Lang_Name"`
+Lang_en=$(wget "https://raw.githubusercontent.com/DamiaX/KernUP/master/KernUP.en.lang" -q -O -);
+EN=`echo $Lang_en > "$AppData/$Lang_Name"`
 source "$AppData/$Lang_Name"
  ;;
 esac
@@ -129,7 +123,7 @@ apt-get upgrade -y -qq;
 Welcome()
 {
 clear;
-echo -e -n "\E[28;1m [[ KernUP:\040"; echo -e -n "\E[31;1m$Version [Beta rc2.1] \033[0m"; echo -e -n "\E[28;1m ]] -\040" ; echo -e -n "\E[$Alert;1m Twoje nowe jajko!\033[0m \n"; 
+echo -e -n "\E[28;1m [[ KernUP:\040"; echo -e -n "\E[31;1m$Version [Beta rc2.3] \033[0m"; echo -e -n "\E[28;1m ]] -\040" ; echo -e -n "\E[$Alert;1m Twoje nowe jajko!\033[0m \n"; 
 CreateData;
 Color;
 Language;
@@ -139,17 +133,17 @@ InstallApp;
 
 AppUpdate()
 {
+Server_Version=$(wget "https://raw.githubusercontent.com/DamiaX/KernUP/master/Version" -q -O -);
 New_Version=$(echo $Server_Version | tr '.' ',' | sed -e 's@,@@g');
 Actual_Version=$(echo $Version | tr '.' ',' | sed -e 's@,@@g');
 if [ $Actual_Version != $New_Version ]
 then
 echo -e -n "\E[$Alert;1m$Information\033[0m"; 
 echo -e -n "\E[$Wow;1m $Updatelng\033[0m \n";
-
-$Download_Version;
+wget $Core_Url -q -O "$AppData/$AppName" | chmod +x -f "$AppData/$AppName";
 echo -e -n "\E[$Alert;1m$Information\033[0m"; 
 echo -e -n "\E[$Action;1m $Rebotlng \040 \n";
-bash $AppData/$AppName;
+bash "$AppData/$AppName";
 exit;
 fi
 }
