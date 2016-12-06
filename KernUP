@@ -50,7 +50,7 @@ read Answer;
 Default_Answer "t";
 
 if [[ $Answer == "T" || $Answer == "t" || $Answer == "y" || $Answer == "Y" ]]; then
-cp $0 "$AppData/$AppName";
+cp -r $0 "$AppData/$AppName";
 chmod +x -f "$AppData/$AppName";
 echo "alias $AppName='$AppData/$AppName'" >> $AliasName;
 crontab -l > "$AppData/Temp/cronfile";
@@ -63,7 +63,6 @@ fi
 
 RemoveApp()
 {
-if [ -f "$AppData/$AppName" ] ; then
 echo -e -n "\E[$Alert;1m$Information\033[0m"; 
 echo -e -n "\E[$Text;1m Chcesz skasowac aplikacje?\033[0m ";
 echo -e "\E[$Alert;1m $Odplng\033[0m";
@@ -76,22 +75,22 @@ sed -i "s#@reboot $AppData/$AppName -au##g" "$AppData/Temp/cronfile";
 crontab "$AppData/Temp/cronfile";
 rm -rf $AppData;
 fi
-fi
 }
 
 
-Test_network()
+TestNetwork()
 {
-touch "ping" "$AppData/Temp/ping"
-url=$(ping -c1 "google.com" > "$AppData/Temp/ping" 2>&1)
+touch "ping" "$AppData/Temp/ping";
+url=$(ping -c1 "google.com" > "$AppData/Temp/ping" 2>&1);
 
 if [ "$?" = "2" ];
 then
-echo "Brak neta!";
-rm -rf "$AppData/Temp/ping"
+echo -e -n "\E[$Alert;1m$Information\033[0m"; 
+echo -e "\E[$Wow;1m Brak polaczenia z internetem!\033[0m ";
+rm -rf "$AppData/Temp/ping";
 exit;
 fi
-rm -rf "$AppData/Temp/ping"
+rm -rf "$AppData/Temp/ping";
 }
 
 
@@ -106,16 +105,19 @@ Language()
 {
 case $LANG in
 *PL*) 
+if [ ! -f "$AppData/$Lang_Name" ] ; then
 Lang_pl=$(wget "https://raw.githubusercontent.com/DamiaX/KernUP/master/KernUP.pl.lang" -q -O -);
-PL=`echo $Lang_pl > "$AppData/$Lang_Name"`
-source "$AppData/$Lang_Name" 
+PL=`echo $Lang_pl > "$AppData/$Lang_Name"`;
+fi
  ;;
 *) 
+if [ ! -f "$AppData/$Lang_Name" ] ; then
 Lang_en=$(wget "https://raw.githubusercontent.com/DamiaX/KernUP/master/KernUP.en.lang" -q -O -);
-EN=`echo $Lang_en > "$AppData/$Lang_Name"`
-source "$AppData/$Lang_Name"
+EN=`echo $Lang_en > "$AppData/$Lang_Name"`;
+fi
  ;;
 esac
+source "$AppData/$Lang_Name";
 }
 
 CreateData()
@@ -142,13 +144,13 @@ apt-get upgrade -y -qq;
 Welcome()
 {
 clear;
-Test_network;
-echo -e -n "\E[28;1m [[ KernUP uruchomiony w: $0 \040"; echo -e -n "\E[31;1m$Version [Beta rc2.7] \033[0m"; echo -e -n "\E[28;1m ]] -\040" ; echo -e "\E[$Alert;1m Twoje nowe jajko!\033[0m"; 
-CreateData;
 Color;
+CreateData;
 Language;
-AppUpdate;
+echo -e -n "\E[28;1m [[ KernUP: \040"; echo -e -n "\E[31;1m$Version [Beta rc3.0] \033[0m"; echo -e -n "\E[28;1m ]] -\040" ; echo -e "\E[$Alert;1m Twoje nowe jajko!\033[0m"; 
+TestNetwork;
 InstallApp;
+AppUpdate;
 }
 
 AppUpdate()
