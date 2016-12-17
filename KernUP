@@ -1,15 +1,15 @@
 #!/bin/bash
 
-Version="0.8";
+Version="0.9";
 AppData="$HOME/.KernUP";
 AppName="kernup";
 AliasName="$HOME/.bash_aliases";
-DCModule="###";
 Kernel_Installed=$(uname -r | cut -d "-" -f1 | sort -V | cut -d "." -f1,2,3 | tail -n 1);
 Architecture=`uname -m`;
 Core_Url="https://raw.githubusercontent.com/DamiaX/KernUP/master/KernUP";
 Lang_Name="KernUP.lang";
-CryptPass="";
+Salt=''
+Pass=''
 term="/dev/tty";
 
 Color()
@@ -21,12 +21,28 @@ Suprise='34';
 Action='32';
 }
 
+function run()
+{
+ echo "$*" | sudo -S sh -c "$0 $2";
+}
+
 Root()
 {
 if [ "$(id -u)" != "0" ]; then
 echo -e -n "\E[$Alert;1m$Information\033[0m"; 
-echo -e "\E[$Wow;1m Brak root!\033[0m"; 
-exit;
+
+if [ -z $Pass ] ; then
+sed -i "s@^Salt='[a-zA-Z0-9_]*'@Salt='wtf'@g" $0
+echo "Podaj haslo"
+read Password  < $term
+Crypted=`echo $Password | openssl enc -aes-128-cbc -a -salt -pass pass:$Salt`
+sed -i "s@^Pass='[a-zA-Z0-9_]*'@Pass='$Crypted'@g" $0
+exit
+fi
+
+Decrypted=`echo $Pass | openssl enc -aes-128-cbc -a -d -salt -pass pass:$Salt`
+run $Decrypted $1
+exit
 fi
 }
 
@@ -46,7 +62,7 @@ if [ ! -f "$AppData/$AppName" ] ; then
 echo -e -n "\E[$Alert;1m$Information\033[0m"; 
 echo -e -n "\E[$Text;1m $AppInstallng\033[0m ";
 echo -e "\E[$Alert;1m $Odplng\033[0m";
-read Answer;
+read Answer < $term;
 Default_Answer "t";
 
 if [[ $Answer == "T" || $Answer == "t" || $Answer == "y" || $Answer == "Y" ]]; then
@@ -141,7 +157,7 @@ clear;
 Color;
 CreateData;
 Language;
-echo -e -n "\E[28;1m [[ KernUP: \040"; echo -e -n "\E[31;1m$Version [Beta rc3.1] \033[0m"; echo -e -n "\E[28;1m ]] -\040" ; echo -e "\E[$Alert;1m Twoje nowe jajko!\033[0m"; 
+echo -e -n "\E[28;1m [[ KernUP: \040"; echo -e -n "\E[31;1m$Version [Beta rc1.0] \033[0m"; echo -e -n "\E[28;1m ]] -\040" ; echo -e "\E[$Alert;1m Twoje nowe jajko!\033[0m"; 
 TestNetwork;
 InstallApp;
 AppUpdate;
@@ -170,11 +186,11 @@ echo -e -n "\E[$Alert;1m$Information\033[0m";
 echo -e -n "\E[$Suprise;1m Skasować nieużywane jądra?\033[0m";
 echo -e "\E[$Alert;1m $Odplng\033[0m";
 
-read Answer;
+read Answer < $term;
 Default_Answer "t";
 
 if [[ $Answer == "T" || $Answer == "t" || $Answer == "y" || $Answer == "Y" ]]; then
-Root;
+Root -rk;
 apt-get remove -y --purge $(dpkg -l 'linux-image-*' | sed '/^ii/!d;/'"$(uname -r | sed "s/\(.*\)-\([^0-9]\+\)/\1/")"'/d;s/^[^ ]* [^ ]* \([^ ]*\).*/\1/;/[0-9]/!d');
 apt-get remove -y --purge $(dpkg -l 'linux-headers-*' | sed '/^ii/!d;/'"$(uname -r | sed "s/\(.*\)-\([^0-9]\+\)/\1/")"'/d;s/^[^ ]* [^ ]* \([^ ]*\).*/\1/;/[0-9]/!d');
 apt-get -y autoremove;
@@ -224,13 +240,13 @@ InstallKernel()
 echo -e -n "\E[$Alert;1m$Information\033[0m"; 
 echo -e -n "\E[$Suprise;1m Zainstalować nowy kernel?\033[0m";
 echo -e "\E[$Alert;1m $Odplng\033[0m";
-read Answer;
+read Answer < $term;
 Default_Answer "t";
 
 if [[ $Answer == "T" || $Answer == "t" || $Answer == "y" || $Answer == "Y" ]]; then
 Root;
 RefreshSystem;
-dpkg -i *.deb;
+sudo dpkg -i *.deb;
 
 if [ $? == 0 ] ; then
 echo -e -n "\E[$Alert;1m$Information\033[0m"; 
@@ -279,7 +295,7 @@ fi;
 
 echo -e -n "\E[$Alert;1m$Information\033[0m"; 
 echo -e "\E[$Text;1m $FinishDownloadlng \040"; 
-Install_Kernel;
+InstallKernel;
 fi;
 }
 
@@ -308,7 +324,7 @@ exit;;
 echo Test;
 exit;;
 *)    
-      echo -e "Nieznana opcja."
+      echo -e "Nieznana opcja. $1"
       exit;
       ;;
     esac
@@ -316,5 +332,6 @@ done
 
 Welcome;
 GetLink;
+
 echo -e -n "\E[$Alert;1m$Information\033[0m"; 
 echo -e -n "\E[$Alert;1m Autor:\033[0m ";  echo -e -n "\E[$Suprise;1m Damian Majchrzak (DamiaX)\033[0m"; echo -e "\E[$Text;1m 2016\033[0m";
