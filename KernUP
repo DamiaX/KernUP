@@ -4,7 +4,8 @@ Version="0.9";
 AppData="$HOME/.KernUP";
 AppName="kernup";
 AliasName="$HOME/.bash_aliases";
-Kernel_Installed=$(uname -r | cut -d "-" -f1 | sort -V | cut -d "." -f1,2,3 | tail -n 1);
+InstalledVersion=$(uname -r | cut -d "-" -f1 | sort -V | cut -d "." -f1,2,3 | tail -n 1);
+KernelInstalled=`echo $InstalledVersion | sed -e "s@.0@@g"`
 Architecture=`uname -m`;
 Core_Url="https://raw.githubusercontent.com/DamiaX/KernUP/master/KernUP";
 Lang_Name="KernUP.lang";
@@ -19,11 +20,6 @@ Text='36';
 Wow='31';
 Suprise='34';
 Action='32';
-}
-
-function run()
-{
- echo "$*" | sudo -S sh -c "$0 $2";
 }
 
 Root()
@@ -41,8 +37,7 @@ exit
 fi
 
 Decrypted=`echo $Pass | openssl enc -aes-128-cbc -a -d -salt -pass pass:$Salt`
-run $Decrypted $1
-exit
+echo $Decrypted | sudo -S sh -c "bash $0 $1";
 fi
 }
 
@@ -147,8 +142,8 @@ fi
 
 RefreshSystem()
 {
-apt-get update -y -qq;
-apt-get upgrade -y -qq;	
+sudo apt-get update -y -qq;
+sudo apt-get upgrade -y -qq;	
 }
 
 Welcome()
@@ -157,7 +152,7 @@ clear;
 Color;
 CreateData;
 Language;
-echo -e -n "\E[28;1m [[ KernUP: \040"; echo -e -n "\E[31;1m$Version [Beta rc1.0] \033[0m"; echo -e -n "\E[28;1m ]] -\040" ; echo -e "\E[$Alert;1m Twoje nowe jajko!\033[0m"; 
+echo -e -n "\E[28;1m [[ KernUP: \040"; echo -e -n "\E[31;1m$Version [Beta rc4.2] \033[0m"; echo -e -n "\E[28;1m ]] -\040" ; echo -e "\E[$Alert;1m Twoje nowe jajko!\033[0m"; 
 TestNetwork;
 InstallApp;
 AppUpdate;
@@ -240,13 +235,20 @@ InstallKernel()
 echo -e -n "\E[$Alert;1m$Information\033[0m"; 
 echo -e -n "\E[$Suprise;1m Zainstalować nowy kernel?\033[0m";
 echo -e "\E[$Alert;1m $Odplng\033[0m";
+if [[ $1 != "1" ]] ; then
 read Answer < $term;
 Default_Answer "t";
 
 if [[ $Answer == "T" || $Answer == "t" || $Answer == "y" || $Answer == "Y" ]]; then
-Root;
+Root -su;
+Root -ik;
+sudo dpkg -i *.deb;
+fi
+
+else
 RefreshSystem;
 sudo dpkg -i *.deb;
+fi
 
 if [ $? == 0 ] ; then
 echo -e -n "\E[$Alert;1m$Information\033[0m"; 
@@ -256,14 +258,14 @@ else
 echo -e -n "\E[$Alert;1m$Information\033[0m"; 
 echo -e "\E[$Wow;1m $Abortlng\033[0m"; 
 fi
-fi
+
 cd $HOME;
 rm -rf "$AppData/Temp";
 }
 
 DownloadKernel()
 {
-if [ $Kernel_Installed = $Kernel_Latest_Version ] ; then
+if [ $KernelInstalled == $Kernel_Latest_Version ] ; then
 echo -e -n "\E[$Alert;1m$Information\033[0m"; 
 echo -e "\E[$Action;1m $Gitlng \040"; 
 else 
@@ -320,8 +322,12 @@ exit;;
 AutoRefresh;
 exit;;
 
-"--test"|"-t")
-echo Test;
+"--installkernel"|"-ik")
+InstallKernel 1;
+exit;;
+
+"--systemupdate"|"-su")
+RefreshSystem
 exit;;
 *)    
       echo -e "Nieznana opcja. $1"
