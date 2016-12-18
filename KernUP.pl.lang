@@ -16,3 +16,15 @@ EGGlng='Twoje nowsze jądro :)'
 AppInstallng='Chcesz mnie w systemie?'
 Odplng='[T/n]'
 Internetlng='Nie podziałasz! Znajdź internet!'
+AdminPass='Podaj hasło administratora:'
+AnswerRemove="Chcesz skasować aplikację $AppName ze swojego komputera?"
+RemoveK_Ask='Chcesz wyrzucić stare jaja z systemu?'
+InstallKernelAsk='Zainstalować nowy kernel?'
+
+#Parametrs
+
+UnknowOption='Nieznana opcja:' 
+RunText='Wpisz' 
+InformationText='dla uzyskania pomocy.'
+DleteText='Skasuj aplikacje'
+RemoveText='Wyrzuć stare jajka' 
