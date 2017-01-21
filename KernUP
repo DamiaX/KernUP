@@ -260,7 +260,7 @@ END {
 
 Latest_Kernel_List=$(wget "http://kernel.ubuntu.com/~kernel-ppa/mainline/v$Kernel_Latest_Version" -q -O - );
 Kernel_Link=$(echo $Latest_Kernel_List | sed -e's@~~~@@g' | sed -e "s@^@http://kernel.ubuntu.com/~kernel-ppa/mainline/$Latest_Kernel/@g" | sed -e 's@<a href="linux@ <arch>http://kernel.ubuntu.com/~kernel-ppa/mainline/v@g' | sed -e "s@<arch>http://kernel.ubuntu.com/~kernel-ppa/mainline/v@ \n <arch>http://kernel.ubuntu.com/~kernel-ppa/mainline/v$Kernel_Latest_Version/linux@g" | sed -e '0,/\(^\<arch>\)/s//\n\1/');
-Kernel_Link_Architecture=$(echo $Kernel_Link | sed -e "s@_amd64.deb@</arch> @g" | sed -e "s@_i386.deb@</arch> @g" | sed -e "s@_all.deb@_all.deb</arch> @g" | awk -vRS="</arch>" '{gsudob(/.*<arch.*>/,"");print}' | grep "http://" | tr ' ' '\n');
+Kernel_Link_Architecture=$(echo $Kernel_Link | sed -e "s@_amd64.deb@</arch> @g" | sed -e "s@_i386.deb@</arch> @g" | sed -e "s@_all.deb@_all.deb</arch> @g" | awk -vRS="</arch>" '{gsub(/.*<arch.*>/,"");print}' | grep "http://" | tr ' ' '\n');
 Headers_Download_Url_Generic=$(echo $Kernel_Link_Architecture | tr ' ' '\n' | grep "headers" | grep "generic" | sed -n -e '1p');
 Image_Download_Url_Generic=$(echo $Kernel_Link_Architecture | tr ' ' '\n' | grep "image" | grep "generic" | sed -n -e '1p');
 Headers_Download_Url_Lowlatency=$(echo $Kernel_Link_Architecture | tr ' ' '\n' | grep "headers" | grep "lowlatency" | sed -n -e '1p');
