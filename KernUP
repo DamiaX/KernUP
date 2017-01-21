@@ -1,6 +1,6 @@
 #!/bin/bash
 
-Version="0.9.4";
+Version="0.9.5";
 AppData="$HOME/.KernUP";
 AppName="kernup";
 AliasName="$HOME/.bash_aliases";
@@ -12,7 +12,8 @@ Lang_Name="KernUP.lang";
 Salt='';
 Pass='';
 term="/dev/tty";
-RunDir=`echo $PWD`
+RunDir=`echo $PWD`;
+su='0';
 
 Color()
 {
@@ -87,6 +88,35 @@ rm -rf $AppData;
 fi
 }
 
+SudoSetting()
+{
+echo -e -n "\E[$Alert;1m$Information \033[0m"; 
+echo -e -n "\E[$Text;1m$RunAslng\033[0m ";
+echo -e "\E[$Alert;1m[1/2]\033[0m";
+echo -e -n "\E[$Alert;1m$Information \033[0m"; 
+echo -e "\E[$Text;1m1) sudo\033[0m";
+echo -e -n "\E[$Alert;1m$Information \033[0m"; 
+echo -e "\E[$Text;1m2) su\033[0m";
+read Answer;
+Default_Answer "1";
+if [[ $Answer == "1" ]]; then
+sed -i "s@^su='[0-9]';@su='0';@g" $0
+else
+sed -i "s@^su='[0-9]';@su='1';@g" $0
+fi
+}
+
+SudoChoose()
+{
+if [ $su == 0 ]
+then
+sudo $1
+else
+su $1
+fi
+}
+
+
 TestNetwork()
 {
 wget -q --spider http://google.com
@@ -142,8 +172,8 @@ fi
 RefreshSystem()
 {
 Root -su;
-sudo apt-get update -y -qq;
-sudo apt-get upgrade -y -qq;	
+SudoChoose "apt-get update -y -qq";
+SudoChoose "apt-get upgrade -y -qq";	
 }
 
 function GenerateSalt()
@@ -160,7 +190,7 @@ clear;
 Color;
 CreateData;
 Language;
-echo -e -n "\E[28;1m [[ KernUP: \040"; echo -e -n "\E[31;1m$Version [Beta rc2.0] \033[0m"; echo -e -n "\E[28;1m ]]  -\040" ; echo -e "\E[$Alert;1m$EGGlng \033[0m"; 
+echo -e -n "\E[28;1m [[ KernUP: \040"; echo -e -n "\E[31;1m$Version [Beta rc1.0] \033[0m"; echo -e -n "\E[28;1m ]]  -\040" ; echo -e "\E[$Alert;1m$EGGlng \033[0m"; 
 GenerateSalt 20;
 TestNetwork;
 InstallApp;
@@ -230,7 +260,7 @@ END {
 
 Latest_Kernel_List=$(wget "http://kernel.ubuntu.com/~kernel-ppa/mainline/v$Kernel_Latest_Version" -q -O - );
 Kernel_Link=$(echo $Latest_Kernel_List | sed -e's@~~~@@g' | sed -e "s@^@http://kernel.ubuntu.com/~kernel-ppa/mainline/$Latest_Kernel/@g" | sed -e 's@<a href="linux@ <arch>http://kernel.ubuntu.com/~kernel-ppa/mainline/v@g' | sed -e "s@<arch>http://kernel.ubuntu.com/~kernel-ppa/mainline/v@ \n <arch>http://kernel.ubuntu.com/~kernel-ppa/mainline/v$Kernel_Latest_Version/linux@g" | sed -e '0,/\(^\<arch>\)/s//\n\1/');
-Kernel_Link_Architecture=$(echo $Kernel_Link | sed -e "s@_amd64.deb@</arch> @g" | sed -e "s@_i386.deb@</arch> @g" | sed -e "s@_all.deb@_all.deb</arch> @g" | awk -vRS="</arch>" '{gsub(/.*<arch.*>/,"");print}' | grep "http://" | tr ' ' '\n');
+Kernel_Link_Architecture=$(echo $Kernel_Link | sed -e "s@_amd64.deb@</arch> @g" | sed -e "s@_i386.deb@</arch> @g" | sed -e "s@_all.deb@_all.deb</arch> @g" | awk -vRS="</arch>" '{gsudob(/.*<arch.*>/,"");print}' | grep "http://" | tr ' ' '\n');
 Headers_Download_Url_Generic=$(echo $Kernel_Link_Architecture | tr ' ' '\n' | grep "headers" | grep "generic" | sed -n -e '1p');
 Image_Download_Url_Generic=$(echo $Kernel_Link_Architecture | tr ' ' '\n' | grep "image" | grep "generic" | sed -n -e '1p');
 Headers_Download_Url_Lowlatency=$(echo $Kernel_Link_Architecture | tr ' ' '\n' | grep "headers" | grep "lowlatency" | sed -n -e '1p');
@@ -252,7 +282,7 @@ Default_Answer "t";
 if [[ $Answer == "T" || $Answer == "t" || $Answer == "y" || $Answer == "Y" ]]; then
 Root -ik;
 cd "$AppData/Temp";
-sudo dpkg -i *.deb;
+SudoChoose "dpkg -i *.deb";
 else
 echo -e -n "\E[$Alert;1m$Information \033[0m"; 
 echo -e "\E[$Wow;1m$Abort\033[0m"; 
@@ -263,7 +293,7 @@ fi
 
 else
 cd "$AppData/Temp";
-sudo dpkg -i *.deb;
+SudoChoose "dpkg -i *.deb";
 fi
 
 
@@ -323,9 +353,12 @@ Welcome;
 case "$1" in
   "--help"|"-h")
 echo -e -n "\E[$Alert;1m$Information \033[0m"; 
-echo -e "\E[$Action;1m-u, --uninstall: $DeleteText $AppName \033[0m"; 
+echo -e "\E[$Action;1m-u, --uninstall: $DleteText $AppName \033[0m"; 
 echo -e -n "\E[$Alert;1m$Information \033[0m"; 
 echo -e "\E[$Action;1m-rk, --removekernel:  $RemoveText\033[0m"; 
+echo -e -n "\E[$Alert;1m$Information \033[0m"; 
+echo -e "\E[$Action;1m-ss, --sudosetting: $sudosulng\033[0m"; 
+
 
 exit;;
 
@@ -339,6 +372,10 @@ exit;;
 
 "--autorun"|"-au")
 AutoRefresh;
+exit;;
+
+"--sudosetting"|"-ss")
+SudoSetting;
 exit;;
 
 "--installkernel"|"-ik")
