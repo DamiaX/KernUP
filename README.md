@@ -13,6 +13,7 @@ Features:<br>
 * The translations (Polish and English).<br>
 * Removing older versions of the kernel.<br>
 * Automatically install updates.<br>
+* Recompile VirtualBox modules. <br>
 
 </blockquote>
 <hr>
