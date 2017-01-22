@@ -1,6 +1,6 @@
 #!/bin/bash
 
-Version="0.9.5";
+Version="0.9.6";
 AppData="$HOME/.KernUP";
 AppName="kernup";
 AliasName="$HOME/.bash_aliases";
@@ -13,6 +13,7 @@ Salt='';
 Pass='';
 term="/dev/tty";
 RunDir=`echo $PWD`;
+VboxDir='/etc/inid.d/vboxdrv'
 su='0';
 
 Color()
@@ -22,6 +23,13 @@ Text='36';
 Wow='31';
 Suprise='34';
 Action='32';
+}
+
+RecompileVirtualbox()
+{
+if [ -f $VboxDir ] ; then
+"$VboxDir setup"
+fi
 }
 
 Root()
@@ -40,15 +48,6 @@ Decrypted=`echo $Pass | openssl enc -aes-128-cbc -a -d -salt -pass pass:$Salt`
 echo "$Decrypted" | sudo -S  sh -c "bash $0 $1";
 exit
 fi
-}
-
-AutoRefresh()
-{
-for (( i=1; $i <= 2; )) ; do
-Welcome;
-GetLink;
-sleep 3600;
-done;
 }
 
 InstallApp()
@@ -116,7 +115,6 @@ su $1
 fi
 }
 
-
 TestNetwork()
 {
 wget -q --spider http://google.com
@@ -162,10 +160,11 @@ mkdir -p "$AppData/Temp";
 
 Check_Distro()
 {
-if [[ "$(lsb_release -si)" != "Ubuntu" && "$(lsb_release -si)" != "LinuxMint" && "$(lsb_release -si)" != "elementary OS" && "$(lsb_release -si)" != "Debian" && "$(lsb_release -si)" != "elementary"  ]] ; then
+if [ ! -e "/usr/bin/dpkg" ] ;
+then
 echo -e -n "\E[$Alert;1m$Information \033[0m"; 
 echo -e "\E[$Wow;1m$Dist\033[0m";
-   exit;
+exit;
 fi
 }
 
@@ -190,7 +189,7 @@ clear;
 Color;
 CreateData;
 Language;
-echo -e -n "\E[28;1m [[ KernUP: \040"; echo -e -n "\E[31;1m$Version [Beta rc1.0] \033[0m"; echo -e -n "\E[28;1m ]]  -\040" ; echo -e "\E[$Alert;1m$EGGlng \033[0m"; 
+echo -e -n "\E[28;1m [[ KernUP: \040"; echo -e -n "\E[31;1m$Version [Beta rc1.2] \033[0m"; echo -e -n "\E[28;1m ]]  -\040" ; echo -e "\E[$Alert;1m$EGGlng \033[0m"; 
 GenerateSalt 20;
 TestNetwork;
 InstallApp;
@@ -296,7 +295,6 @@ cd "$AppData/Temp";
 SudoChoose "dpkg -i *.deb";
 fi
 
-
 if [ $? == 0 ] ; then
 echo -e -n "\E[$Alert;1m$Information\033[0m"; 
 echo -e "\E[$Action;1m $Successlng \040"; 
@@ -358,8 +356,8 @@ echo -e -n "\E[$Alert;1m$Information \033[0m";
 echo -e "\E[$Action;1m-rk, --removekernel:  $RemoveText\033[0m"; 
 echo -e -n "\E[$Alert;1m$Information \033[0m"; 
 echo -e "\E[$Action;1m-ss, --sudosetting: $sudosulng\033[0m"; 
-
-
+echo -e -n "\E[$Alert;1m$Information \033[0m"; 
+echo -e "\E[$Action;1m-rvb, --recompilevb: Przebuduj moduły VirtualBox\033[0m"; 
 exit;;
 
 "--uninstall"|"-u") 
@@ -371,7 +369,12 @@ RemoveKernel;
 exit;;
 
 "--autorun"|"-au")
-AutoRefresh;
+Welcome;
+GetLink;
+exit;;
+
+"--recompilevb"|"-rvb")
+RecompileVirtualbox;
 exit;;
 
 "--sudosetting"|"-ss")
@@ -383,7 +386,7 @@ InstallKernel 1;
 exit;;
 
 "--systemupdate"|"-su")
-RefreshSystem
+RefreshSystem;
 exit;;
 *)    
   echo -e -n "\E[$Alert;1m$Information \033[0m"; 
