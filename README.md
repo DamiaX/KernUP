@@ -44,6 +44,16 @@ Uninstall KernUP:<br>
 </blockquote>
 <hr>
 
+
+Donate:
+
+73 1140 2004 0000 3602 7649 3569 (mBank)
+Damian Majchrzak
+
+Paypal:
+https://paypal.me/HelpMeToRich
+
+<hr>
 Author:<br>
 <blockquote>
 Damian Majchrzak (https://www.facebook.com/DamiaX).
