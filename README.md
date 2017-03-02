@@ -1,6 +1,6 @@
 About:<blockquote>
 **KernUP** is a program to automatically update the kernel for: <br>
-**Ubuntu**, **Ubuntu Studio**,<br> **Ubuntu GNOME**, **Ubuntu Kylin**,<br> **Ubuntu Budgie**, **Edubuntu**,<br> **Ubuntu Mate**, **Lubuntu**,<br> **Xubuntu**, **Kubuntu**,<br> **Debian**, **elementary OS**,<br> **Linux Mint**, **LXLE**,<br> **KDE neon**, **Linux Lite**<br> and others **Ubuntu based** Linux distribution.   
+**Ubuntu**, **Ubuntu Studio**,<br> **Ubuntu GNOME**, **Ubuntu Kylin**,<br> **Ubuntu Budgie**, **Edubuntu**,<br> **Ubuntu Mate**, **Lubuntu**,<br> **Xubuntu**, **Kubuntu**,<br> **Debian**, **elementary OS**,<br> **Linux Mint**, **LXLE**,<br> **KDE neon**, **Linux Lite**<br> and others **Debian based** Linux distribution.   
 
 </blockquote>
 <hr>
