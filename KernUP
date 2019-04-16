@@ -314,7 +314,7 @@ if [ $KernelInstalled == $Kernel_Latest_Version ] ; then
 echo -e -n "\E[$Alert;1m$Information\033[0m"; 
 echo -e "\E[$Action;1m $Gitlng \040"; 
 else 
-notify-send "KernUP" "$Chicklng"
+notify-send -i stock_lock-broken "KernUP" "$Chicklng"
 echo -e -n "\E[$Alert;1m$Information \033[0m";
 echo -e "\E[$Wow;1m$Chicklng \033[0m" ;
 echo -e -n "\E[$Alert;1m$Information \033[0m"; 
