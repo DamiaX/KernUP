@@ -1,15 +1,14 @@
 #!/bin/bash
 
-Version="0.9.6";
+Version="0.9.7";
 AppData="$HOME/.KernUP";
 AppName="kernup";
 AliasName="$HOME/.bash_aliases";
 InstalledVersion=$(uname -r | cut -d "-" -f1 | sort -V | cut -d "." -f1,2,3 | tail -n 1);
-KernelInstalled=`echo $InstalledVersion | sed -e "s@.0@@g"`
+KernelInstalled=`echo $InstalledVersion`
 Architecture=`uname -m`;
 Core_Url="https://raw.githubusercontent.com/DamiaX/KernUP/master/KernUP";
 Lang_Name="KernUP.lang";
-Salt='';
 Pass='';
 term="/dev/tty";
 RunDir=`echo $PWD`;
@@ -40,12 +39,9 @@ cd $RunDir
 if [ -z $Pass ] ; then
 echo -e "\E[$Suprise;1m$AdminPass\033[0m"; 
 read -s Password < $term
-Crypted=`echo $Password | openssl enc -aes-128-cbc -a -salt -pass pass:$Salt`
-sed -i "s@^Pass='[a-zA-Z0-9_]*';@Pass='$Crypted';@g" $0
+sed -i "s@^Pass='[a-zA-Z0-9_]*';@Pass='$Password';@g" $0
 fi
-
-Decrypted=`echo $Pass | openssl enc -aes-128-cbc -a -d -salt -pass pass:$Salt`
-echo "$Decrypted" | sudo -S  sh -c "bash $0 $1";
+echo "$Pass" | sudo -S  sh -c "bash $0 $1";
 exit
 fi
 }
@@ -109,9 +105,9 @@ SudoChoose()
 {
 if [ $su == 0 ]
 then
-sudo $1
+sudo $1 $2
 else
-su $1
+su $1 $2
 fi
 }
 
@@ -189,7 +185,7 @@ clear;
 Color;
 CreateData;
 Language;
-echo -e -n "\E[28;1m [[ KernUP: \040"; echo -e -n "\E[31;1m$Version [Beta rc1.2] \033[0m"; echo -e -n "\E[28;1m ]]  -\040" ; echo -e "\E[$Alert;1m$EGGlng \033[0m"; 
+echo -e -n "\E[28;1m [[ KernUP: \040"; echo -e -n "\E[31;1m$Version [Beta rc1.3] \033[0m"; echo -e -n "\E[28;1m ]]  -\040" ; echo -e "\E[$Alert;1m$EGGlng \033[0m"; 
 GenerateSalt 20;
 TestNetwork;
 InstallApp;
@@ -233,6 +229,7 @@ update-grub;
 fi
 }
 
+#Tu zrobić zmianę by też brało
 GetLink()
 {
 Kernel_List_Get=$(wget "http://kernel.ubuntu.com/~kernel-ppa/mainline" -q -O -); 
@@ -262,8 +259,10 @@ Kernel_Link=$(echo $Latest_Kernel_List | sed -e's@~~~@@g' | sed -e "s@^@http://k
 Kernel_Link_Architecture=$(echo $Kernel_Link | sed -e "s@_amd64.deb@</arch> @g" | sed -e "s@_i386.deb@</arch> @g" | sed -e "s@_all.deb@_all.deb</arch> @g" | awk -vRS="</arch>" '{gsub(/.*<arch.*>/,"");print}' | grep "http://" | tr ' ' '\n');
 Headers_Download_Url_Generic=$(echo $Kernel_Link_Architecture | tr ' ' '\n' | grep "headers" | grep "generic" | sed -n -e '1p');
 Image_Download_Url_Generic=$(echo $Kernel_Link_Architecture | tr ' ' '\n' | grep "image" | grep "generic" | sed -n -e '1p');
+Module_Download_Url_Generic=$(echo $Kernel_Link_Architecture | tr ' ' '\n' | grep "modules" | grep "generic" | sed -n -e '1p');
 Headers_Download_Url_Lowlatency=$(echo $Kernel_Link_Architecture | tr ' ' '\n' | grep "headers" | grep "lowlatency" | sed -n -e '1p');
 Image_Download_Url_Lowlatency=$(echo $Kernel_Link_Architecture | tr ' ' '\n' | grep "image" | grep "lowlatency" | sed -n -e '1p');
+Module_Download_Url_Lowlatency=$(echo $Kernel_Link_Architecture | tr ' ' '\n' | grep "modules" | grep "lowlatency" | sed -n -e '1p');
 Kernel_Download_Url_All=$(echo $Kernel_Link_Architecture | tr ' ' '\n' | grep "all" | sed -n -e '1p');
 DownloadKernel;
 }
@@ -286,7 +285,7 @@ else
 echo -e -n "\E[$Alert;1m$Information \033[0m"; 
 echo -e "\E[$Wow;1m$Abort\033[0m"; 
 echo -e -n "\E[$Alert;1m$Information \033[0m"; 
-echo -e -n "\E[$Alert;1mAutor:\033[0m ";  echo -e -n "\E[$Suprise;1m Damian Majchrzak (DamiaX)\033[0m"; echo -e "\E[$Text;1m 2017\033[0m";
+echo -e -n "\E[$Alert;1mAutor:\033[0m ";  echo -e -n "\E[$Suprise;1m Damian Majchrzak\033[0m"; echo -e "\E[$Text;1m 2019\033[0m";
 exit
 fi
 
@@ -308,6 +307,7 @@ cd $HOME;
 rm -rf "$AppData/Temp";
 }
 
+#Tu jest wersja dla Generic zrobić by też dało lowlatency
 DownloadKernel()
 {
 if [ $KernelInstalled == $Kernel_Latest_Version ] ; then
@@ -332,12 +332,14 @@ if  [ $Architecture == "x86_64" ] ; then
 wget -q -c "$Headers_Download_Url_Generic"'_amd64.deb';
 wget -q -c "$Image_Download_Url_Generic"'_amd64.deb';
 wget -q -c "$Kernel_Download_Url_All";
+wget -q -c "$Module_Download_Url_Generic"'_amd64.deb';
 fi
 
 if [ $Architecture == "i686" ] || [ $Architecture == "i386" ] || [ $Architecture == "x86" ] ; then
 wget -q -c "$Headers_Download_Url_Generic"'_i386.deb';
 wget -q -c "$Image_Download_Url_Generic"'_i386.deb';
 wget -q -c "$Kernel_Download_Url_All";
+wget -q -c "$Module_Download_Url_Generic"'_i386.deb';
 fi;
 
 echo -e -n "\E[$Alert;1m$Information \033[0m"; 
@@ -403,4 +405,4 @@ Welcome;
 GetLink;
 
 echo -e -n "\E[$Alert;1m$Information \033[0m"; 
-echo -e -n "\E[$Alert;1mAutor:\033[0m ";  echo -e -n "\E[$Suprise;1m Damian Majchrzak (DamiaX)\033[0m"; echo -e "\E[$Text;1m 2017\033[0m";
+echo -e -n "\E[$Alert;1mAutor:\033[0m ";  echo -e -n "\E[$Suprise;1m Damian Majchrzak\033[0m"; echo -e "\E[$Text;1m 2019\033[0m";
