@@ -21,7 +21,7 @@ GUI Install:<br>
 <blockquote>
 Download this: https://raw.githubusercontent.com/DamiaX/KernUP/master/KernUP file.<br>
 Give permissions to run.
-Run.
+Execute.
 </blockquote>
 <hr>
 Terminal Install:<br>
@@ -31,7 +31,7 @@ Step 1: Download (Method 1/2: Use <code>wget</code> to download a install script
 chmod +x KernUP</code></pre>
 
 Step 1: Download (Method 2/2: Use <code>curl</code> to download a install script and give permissions to run)
-<pre><code>curlhttps://raw.githubusercontent.com/DamiaX/KernUP/master/KernUP > KernUP;
+<pre><code>curl https://raw.githubusercontent.com/DamiaX/KernUP/master/KernUP > KernUP;
 chmod +x KernUP</code></pre>
 
 Step 2: Run  <code>KernUP</code> .
