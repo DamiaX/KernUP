@@ -12,8 +12,10 @@ Features:<br>
 * Automatic updates KernUP.<br>
 * The translations (Polish and English).<br>
 * Removing older versions of the kernel.<br>
+* Removing older modules in /lib/modules. <br>
 * Automatically install updates.<br>
 * Recompile VirtualBox modules. <br>
+* Choose Generiv/Lowlatency kernel version. <br>
 
 </blockquote>
 <hr>
@@ -44,17 +46,20 @@ Uninstall KernUP:<br>
 </blockquote>
 <hr>
 
+<hr>
+Advanced usage examples and notes: <br><blockquote>
+<code>-h</code> or <code>--help</code> view the content of help.<br>
+<code>-u</code> or <code>--uninstall</code> remove application.<br>
+<code>-rk</code> or <code>--removekernel</code> delete old versions of the kernel and modules in order to free up disk space.<br>
+<code>-kv</code> or <code>--kernelversion</code> choice between the kernel in the Generic and Lowlatency versions.<br>
+<code>-rvb</code> or <code>--recompilevb</code> rebuild the VirtualBox module.<br>
+<code>-ss</code> or <code>--sudosetting</code> choose sudo or su for superuser?<br>
+  
+</blockquote>
+<hr>
 
 Donate:
 
-73 1140 2004 0000 3602 7649 3569 (mBank)
-Damian Majchrzak
-
-Paypal:
 https://paypal.me/HelpMeToRich
 
 <hr>
-Author:<br>
-<blockquote>
-Damian Majchrzak (https://www.facebook.com/DamiaX).
-</blockquote>
