@@ -1,6 +1,6 @@
 #!/bin/bash
 
-Version="0.9.8";
+Version="0.9.9";
 AppData="$HOME/.KernUP";
 AppName="kernup";
 AliasName="$HOME/.bash_aliases";
@@ -288,6 +288,7 @@ DownloadKernel;
 
 InstallKernel()
 {
+if find $AppData/Temp -mindepth 1 | read ; then
 echo -e -n "\E[$Alert;1m$Information \033[0m"; 
 echo -e -n "\E[$Suprise;1m$InstallKernelAsk \033[0m";
 echo -e "\E[$Alert;1m$Odplng\033[0m";
@@ -298,6 +299,8 @@ Default_Answer "t";
 
 if [[ $Answer == "T" || $Answer == "t" || $Answer == "y" || $Answer == "Y" ]]; then
 Root -ik;
+
+
 cd "$AppData/Temp";
 SudoChoose "dpkg -i *.deb";
 else
@@ -322,6 +325,7 @@ fi;
 
 cd $HOME;
 rm -rf "$AppData/Temp";
+fi
 }
 
 DownloadKernel()
