@@ -221,6 +221,7 @@ echo -e "\E[$Wow;1m $Updatelng\033[0m";
 wget $Core_Url -q -O "$AppData/$AppName" | chmod +x -f "$AppData/$AppName";
 echo -e -n "\E[$Alert;1m$Information\033[0m"; 
 echo -e "\E[$Action;1m $Rebotlng \040";
+rm -rf "$AppData/$Lang_Name";
 bash "$AppData/$AppName";
 exit;
 fi
