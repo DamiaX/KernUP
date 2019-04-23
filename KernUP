@@ -1,6 +1,6 @@
 #!/bin/bash
 
-Version="0.9.7";
+Version="0.9.8";
 AppData="$HOME/.KernUP";
 AppName="kernup";
 AliasName="$HOME/.bash_aliases";
@@ -14,6 +14,8 @@ term="/dev/tty";
 RunDir=`echo $PWD`;
 VboxDir='/etc/inid.d/vboxdrv'
 su='0';
+KernelVer='';
+
 
 Color()
 {
@@ -28,7 +30,7 @@ RecompileVirtualbox()
 {
 if [ -f $VboxDir ] ; then
 "$VboxDir setup"
-fi
+fi;
 }
 
 Root()
@@ -41,7 +43,11 @@ echo -e "\E[$Suprise;1m$AdminPass\033[0m";
 read -s Password < $term
 sed -i "s@^Pass='[a-zA-Z0-9_]*';@Pass='$Password';@g" $0
 fi
-echo "$Pass" | sudo -S  sh -c "bash $0 $1";
+if [ -z $Pass ] ; then 
+echo "$Password" | sudo -S  sh -c "bash $0 $1"
+else
+echo "$Pass" | sudo -S  sh -c "bash $0 $1"
+fi
 exit
 fi
 }
@@ -60,7 +66,7 @@ cp -r $0 "$AppData/$AppName";
 chmod +x -f "$AppData/$AppName";
 echo "alias $AppName='$AppData/$AppName'" >> $AliasName;
 crontab -l > "$AppData/Temp/cronfile";
-echo "0 * * * * $AppData/$AppName -au" >> "$AppData/Temp/cronfile";
+echo "*/120 * * * * $AppData/$AppName -au" >> "$AppData/Temp/cronfile";
 crontab "$AppData/Temp/cronfile";
 rm -rf "$AppData/Temp/cronfile";
 fi
@@ -105,9 +111,9 @@ SudoChoose()
 {
 if [ $su == 0 ]
 then
-sudo $1 $2
+sudo $1
 else
-su $1 $2
+su $1
 fi
 }
 
@@ -171,12 +177,23 @@ SudoChoose "apt-get update -y -qq";
 SudoChoose "apt-get upgrade -y -qq";	
 }
 
-function GenerateSalt()
+SetupGenericLowlatency()
 {
-if [ -z $Salt ] ; then
-RandomSalt=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w $1  | head -n 1);
-sed -i "s@^Salt='[a-zA-Z0-9_]*';@Salt='$RandomSalt';@g" $0
+if [ -z $KernelVer ] ; then
+SettingGenericLowlatency;
+Root;
 fi
+}
+
+SettingGenericLowlatency()
+{
+echo -e -n "\E[$Alert;1m$Information \033[0m"; 
+echo -e "\E[$Action;1m$InstallGenLow\033[0m"; 
+read KernelVerChose;
+if [ -z $KernelVerChose ]; then
+KernelVerChose="1";
+fi
+sed -i "s@^KernelVer='[a-zA-Z0-9_]*';@KernelVer='$KernelVerChose';@g" $0;
 }
 
 Welcome()
@@ -185,9 +202,9 @@ clear;
 Color;
 CreateData;
 Language;
-echo -e -n "\E[28;1m [[ KernUP: \040"; echo -e -n "\E[31;1m$Version [Beta rc1.3] \033[0m"; echo -e -n "\E[28;1m ]]  -\040" ; echo -e "\E[$Alert;1m$EGGlng \033[0m"; 
-GenerateSalt 20;
+echo -e -n "\E[28;1m [[ KernUP: \040"; echo -e -n "\E[31;1m$Version\033[0m"; echo -e -n "\E[28;1m ]]  -\040" ; echo -e "\E[$Alert;1m$EGGlng \033[0m"; 
 TestNetwork;
+SetupGenericLowlatency;
 InstallApp;
 AppUpdate;
 }
@@ -211,6 +228,7 @@ fi
 
 RemoveKernel()
 {
+Root -rk;
 echo -e -n "\E[$Alert;1m$Information \033[0m"; 
 echo -e -n "\E[$Suprise;1m$RemoveK_Ask \033[0m";
 echo -e "\E[$Alert;1m$Odplng\033[0m";
@@ -219,17 +237,17 @@ read Answer < $term;
 Default_Answer "t";
 
 if [[ $Answer == "T" || $Answer == "t" || $Answer == "y" || $Answer == "Y" ]]; then
-Root -rk;
 apt-get remove -y --purge $(dpkg -l 'linux-image-*' | sed '/^ii/!d;/'"$(uname -r | sed "s/\(.*\)-\([^0-9]\+\)/\1/")"'/d;s/^[^ ]* [^ ]* \([^ ]*\).*/\1/;/[0-9]/!d');
 apt-get remove -y --purge $(dpkg -l 'linux-headers-*' | sed '/^ii/!d;/'"$(uname -r | sed "s/\(.*\)-\([^0-9]\+\)/\1/")"'/d;s/^[^ ]* [^ ]* \([^ ]*\).*/\1/;/[0-9]/!d');
 apt-get -y autoremove;
 apt-get -y autoclean;
 apt-get -y clean;
+modules=$(ls --sort=version /lib/modules |  head -n 1);
+rm -rf "/lib/modules/"$modules;
 update-grub;	
 fi
 }
 
-#Tu zrobić zmianę by też brało
 GetLink()
 {
 Kernel_List_Get=$(wget "http://kernel.ubuntu.com/~kernel-ppa/mainline" -q -O -); 
@@ -284,15 +302,13 @@ SudoChoose "dpkg -i *.deb";
 else
 echo -e -n "\E[$Alert;1m$Information \033[0m"; 
 echo -e "\E[$Wow;1m$Abort\033[0m"; 
-echo -e -n "\E[$Alert;1m$Information \033[0m"; 
-echo -e -n "\E[$Alert;1mAutor:\033[0m ";  echo -e -n "\E[$Suprise;1m Damian Majchrzak\033[0m"; echo -e "\E[$Text;1m 2019\033[0m";
 exit
-fi
+fi;
 
 else
 cd "$AppData/Temp";
 SudoChoose "dpkg -i *.deb";
-fi
+fi;
 
 if [ $? == 0 ] ; then
 echo -e -n "\E[$Alert;1m$Information\033[0m"; 
@@ -301,15 +317,15 @@ echo -e "\E[$Action;1m $Successlng \040";
 else
 echo -e -n "\E[$Alert;1m$Information\033[0m"; 
 echo -e "\E[$Wow;1m $Abortlng\033[0m"; 
-fi
+fi;
 
 cd $HOME;
 rm -rf "$AppData/Temp";
 }
 
-#Tu jest wersja dla Generic zrobić by też dało lowlatency
 DownloadKernel()
 {
+
 if [ $KernelInstalled == $Kernel_Latest_Version ] ; then
 echo -e -n "\E[$Alert;1m$Information\033[0m"; 
 echo -e "\E[$Action;1m $Gitlng \040"; 
@@ -324,32 +340,55 @@ echo -e -n "\E[$Text;1m,$Givelng \0$Alert[0m";
 echo -e -n "\E[$Suprise;1m$Kernel_Latest_Version\033[0m";
 echo -e "\E[$Suprise;1m! \033[0m";
 echo -e -n "\E[$Alert;1m$Information \033[0m"; 
-echo -e "\E[$Text;1m$Downloadlng \040"; 
+echo -e -n "\E[$Action;1m$Downloadlng\040"; 
 
 cd "$AppData/Temp";
- 
+
 if  [ $Architecture == "x86_64" ] ; then
+if [[ $KernelVer == '1' ]]; then 
+echo -e "\E[$Text;1m$Kernel_Latest_Version (Generic) \040"; 
+
 wget -q -c "$Headers_Download_Url_Generic"'_amd64.deb';
 wget -q -c "$Image_Download_Url_Generic"'_amd64.deb';
 wget -q -c "$Kernel_Download_Url_All";
 wget -q -c "$Module_Download_Url_Generic"'_amd64.deb';
-fi
+else
+echo -e "\E[$Text;1m$Kernel_Latest_Version (Lowlatency) \040"; 
+wget -q -c "$Headers_Download_Url_Lowlatency"'_amd64.deb';
+wget -q -c "$Image_Download_Url_Lowlatency"'_amd64.deb';
+wget -q -c "$Kernel_Download_Url_All";
+wget -q -c "$Module_Download_Url_Lowlatency"'_amd64.deb';
+fi;
+
+fi;
 
 if [ $Architecture == "i686" ] || [ $Architecture == "i386" ] || [ $Architecture == "x86" ] ; then
+if [[ $KernelVer == '1' ]]; then 
+echo -e "\E[$Text;1m$Kernel_Latest_Version (Generic) \040"; 
 wget -q -c "$Headers_Download_Url_Generic"'_i386.deb';
 wget -q -c "$Image_Download_Url_Generic"'_i386.deb';
 wget -q -c "$Kernel_Download_Url_All";
 wget -q -c "$Module_Download_Url_Generic"'_i386.deb';
+else
+echo -e "\E[$Text;1m$Kernel_Latest_Version (Lowlatency) \040"; 
+wget -q -c "$Headers_Download_Url_Lowlatency"'_i386.deb';
+wget -q -c "$Image_Download_Url_Lowlatency"'_i386.deb';
+wget -q -c "$Kernel_Download_Url_All";
+wget -q -c "$Module_Download_Url_Lowlatency"'_i386.deb';
+fi;
 fi;
 
 echo -e -n "\E[$Alert;1m$Information \033[0m"; 
 echo -e "\E[$Text;1m$FinishDownloadlng\040"; 
-InstallKernel;
 fi;
 }
 
 while [ "$1" ] ; do 
-Welcome;
+clear;
+Color;
+CreateData;
+Language;
+echo -e -n "\E[28;1m [[ KernUP: \040"; echo -e -n "\E[31;1m$Version\033[0m"; echo -e -n "\E[28;1m ]]  -\040" ; echo -e "\E[$Alert;1m$EGGlng \033[0m"; 
 case "$1" in
   "--help"|"-h")
 echo -e -n "\E[$Alert;1m$Information \033[0m"; 
@@ -359,11 +398,17 @@ echo -e "\E[$Action;1m-rk, --removekernel:  $RemoveText\033[0m";
 echo -e -n "\E[$Alert;1m$Information \033[0m"; 
 echo -e "\E[$Action;1m-ss, --sudosetting: $sudosulng\033[0m"; 
 echo -e -n "\E[$Alert;1m$Information \033[0m"; 
-echo -e "\E[$Action;1m-rvb, --recompilevb: Przebuduj moduły VirtualBox\033[0m"; 
+echo -e "\E[$Action;1m-rvb, --recompilevb: $RecompileVB\033[0m"; 
+echo -e -n "\E[$Alert;1m$Information \033[0m"; 
+echo -e "\E[$Action;1m-kv, --kernelversion: $GenLow\033[0m"; 
 exit;;
 
 "--uninstall"|"-u") 
 RemoveApp;
+exit;;
+
+"--kernelversion"|"-kv") 
+SettingGenericLowlatency;
 exit;;
 
 "--removekernel"|"-rk") 
@@ -373,6 +418,7 @@ exit;;
 "--autorun"|"-au")
 Welcome;
 GetLink;
+InstallKernel 1;
 exit;;
 
 "--recompilevb"|"-rvb")
@@ -403,6 +449,4 @@ done
 
 Welcome;
 GetLink;
-
-echo -e -n "\E[$Alert;1m$Information \033[0m"; 
-echo -e -n "\E[$Alert;1mAutor:\033[0m ";  echo -e -n "\E[$Suprise;1m Damian Majchrzak\033[0m"; echo -e "\E[$Text;1m 2019\033[0m";
+InstallKernel 0;
