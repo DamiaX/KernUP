@@ -1,6 +1,6 @@
 #!/bin/bash
 
-Version="1.0";
+Version="1.1";
 AppData="$HOME/.KernUP";
 AppName="kernup";
 AliasName="$HOME/.bash_aliases";
@@ -16,6 +16,7 @@ RunDir=`echo $PWD`;
 VboxDir='/etc/inid.d/vboxdrv'
 su='0';
 KernelVer='';
+DecryptPass='';
 
 Color()
 {
@@ -33,6 +34,16 @@ if [ -f $VboxDir ] ; then
 fi;
 }
 
+MaskandUnmaskPass()
+{
+if [ -z $Pass ] ; then
+CryptPass=$(echo $1 | openssl enc -aes-128-cbc -a -salt -pbkdf2 -pass pass:$AppName);
+sed -i "s@^Pass='[a-zA-Z0-9_]*';@Pass='$CryptPass';@g" $0
+else
+DecryptPass=$(echo $Pass | openssl enc -aes-128-cbc -a -d -salt -pbkdf2 -pass pass:$AppName);
+fi
+}
+
 Root()
 {
 if [ "$(id -u)" != "0" ]; then
@@ -41,12 +52,12 @@ cd $RunDir
 if [ -z $Pass ] ; then
 echo -e "\E[$Suprise;1m$AdminPass\033[0m"; 
 read -s Password < $term
-sed -i "s@^Pass='[a-zA-Z0-9_]*';@Pass='$Password';@g" $0
+MaskandUnmaskPass $Password;
 fi
 if [ -z $Pass ] ; then 
 echo "$Password" | sudo -S  sh -c "bash $0 $1"
 else
-echo "$Pass" | sudo -S  sh -c "bash $0 $1"
+echo "$DecryptPass" | sudo -S  sh -c "bash $0 $1"
 fi
 exit
 fi
