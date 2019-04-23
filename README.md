@@ -39,12 +39,6 @@ chmod +x KernUP</code></pre>
 Step 2: Run  <code>KernUP</code> .
 <pre><code>./KernUP</code></pre>
 </blockquote>
-<hr>
-Uninstall KernUP:<br>
-<blockquote>
-<code>kernup -u</code><br>
-</blockquote>
-<hr>
 
 <hr>
 Advanced usage examples and notes: <br><blockquote>
