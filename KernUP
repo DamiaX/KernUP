@@ -1,6 +1,6 @@
 #!/bin/bash
 
-Version="1.1";
+Version="1.2";
 AppData="$HOME/.KernUP";
 AppName="kernup";
 AliasName="$HOME/.bash_aliases";
@@ -17,6 +17,7 @@ VboxDir='/etc/inid.d/vboxdrv'
 su='0';
 KernelVer='';
 DecryptPass='';
+Salt='';
 
 Color()
 {
@@ -34,13 +35,22 @@ if [ -f $VboxDir ] ; then
 fi;
 }
 
+GenerateSalt()
+{
+if [ -z $Salt ] ; then
+SaltRes=$(head /dev/urandom | tr -dc A-Za-z0-9 | head -c 8);
+sed -i "s@^Salt='[a-zA-Z0-9_]*';@Salt='$SaltRes';@g" $0
+fi
+}
+
 MaskandUnmaskPass()
 {
+GenerateSalt;
 if [ -z $Pass ] ; then
-CryptPass=$(echo $1 | openssl enc -aes-128-cbc -a -salt -pbkdf2 -pass pass:$AppName);
+CryptPass=$(echo $1 | openssl enc -aes-128-cbc -a -salt -pbkdf2 -pass pass:$Salt);
 sed -i "s@^Pass='[a-zA-Z0-9_]*';@Pass='$CryptPass';@g" $0
 else
-DecryptPass=$(echo $Pass | openssl enc -aes-128-cbc -a -d -salt -pbkdf2 -pass pass:$AppName);
+DecryptPass=$(echo $Pass | openssl enc -aes-128-cbc -a -d -salt -pbkdf2 -pass pass:$Salt);
 fi
 }
 
