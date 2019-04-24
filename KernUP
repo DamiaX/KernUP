@@ -1,6 +1,6 @@
 #!/bin/bash
 
-Version="1.2";
+Version="1.3";
 AppData="$HOME/.KernUP";
 AppName="kernup";
 AliasName="$HOME/.bash_aliases";
@@ -232,8 +232,9 @@ AppUpdate;
 
 CheckSum()
 {
+rm -rf "$AppData/kernup.md5";
 wget $MD5_Url -q -O "$AppData/kernup.md5";
-md5sum -c 'kernup.md5';
+md5sum -c "$AppData/kernup.md5";
 if [ $? == 0 ] ; then
 rm -rf "$AppData/$Lang_Name";
 rm -rf "$AppData/kernup.md5";
@@ -244,6 +245,7 @@ echo -e "\E[$Wow;1m$Abort\033[0m";
 exit
 fi
 }
+
 AppUpdate()
 {
 Server_Version=$(wget "https://raw.githubusercontent.com/DamiaX/KernUP/master/Version" -q -O -);
