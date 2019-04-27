@@ -1,6 +1,6 @@
 #!/bin/bash
 
-Version="1.4";
+Version="1.5";
 AppData="$HOME/.KernUP";
 AppName="kernup";
 AliasName="$HOME/.bash_aliases";
@@ -279,9 +279,13 @@ apt-get remove -y --purge $(dpkg -l 'linux-headers-*' | sed '/^ii/!d;/'"$(uname 
 apt-get -y autoremove;
 apt-get -y autoclean;
 apt-get -y clean;
+
+numbermodules=$(ls /lib/modules | wc -l);
+if [[ $numbermodules != "1" ]] ; then
 modules=$(ls --sort=version /lib/modules |  head -n 1);
 rm -rf "/lib/modules/"$modules;
 update-grub;	
+fi
 fi
 }
 
@@ -348,11 +352,15 @@ fi
 DownloadKernel()
 {
 
-if [ $KernelInstalled == $Kernel_Latest_Version ] ; then
+if [ $KernelInstalled != $Kernel_Latest_Version ] ; then
 echo -e -n "\E[$Alert;1m$Information\033[0m"; 
 echo -e "\E[$Action;1m $Gitlng \040"; 
-else 
+else
+ 
+if [ -e "/usr/bin/notify-send" ] ; then
 notify-send -i stock_lock-broken "KernUP" "$Chicklng"
+fi
+
 echo -e -n "\E[$Alert;1m$Information \033[0m";
 echo -e "\E[$Wow;1m$Chicklng \033[0m" ;
 echo -e -n "\E[$Alert;1m$Information \033[0m"; 
@@ -471,4 +479,5 @@ done
 
 Welcome;
 GetLink;
+
 InstallKernel 0;
