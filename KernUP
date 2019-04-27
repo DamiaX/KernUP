@@ -352,7 +352,7 @@ fi
 DownloadKernel()
 {
 
-if [ $KernelInstalled != $Kernel_Latest_Version ] ; then
+if [ $KernelInstalled == $Kernel_Latest_Version ] ; then
 echo -e -n "\E[$Alert;1m$Information\033[0m"; 
 echo -e "\E[$Action;1m $Gitlng \040"; 
 else
