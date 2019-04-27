@@ -1,6 +1,6 @@
 #!/bin/bash
 
-Version="1.3";
+Version="1.4";
 AppData="$HOME/.KernUP";
 AppName="kernup";
 AliasName="$HOME/.bash_aliases";
@@ -287,28 +287,9 @@ fi
 
 GetLink()
 {
-Kernel_List_Get=$(wget "http://kernel.ubuntu.com/~kernel-ppa/mainline" -q -O -); 
-Kernel_Latest_Version=$(echo $Kernel_List_Get | sed -e 's@<a href="@ http://KernUP/@g' | sed -e 's@/">@ @g' | 
-sed -e 's@[[:space:]]@\n@g' | sed -e '/^[ \t]*$/ d'  | grep 'http://KernUP/v' | sed -e "s@http://KernUP/@@g" | grep -v rc | sed -e "s@v@@g" |
-awk 'function maxelt(vec,   i, ret) {
-for (i in vec) 
-{
-if (ret == "" || vec[i] > ret)
-               ret = vec[i]
-     }
-     return ret
-}
-
-{
-     for(i = 1; i <= NF; i++)
-          nums[NR, i] = $i
-}
-
-END {
-     print maxelt(nums)
-}'
-);
-
+Kernel_List_Get=$(wget -qO- 'http://kernel.org'); 
+Kernel_Latest_Version=$(echo $Kernel_List_Get |  perl -l -0777 -ne 'print $1 if /<td id="latest_link">\s*(.*?)\s*<\/td/si' |
+  perl -l -0777 -ne 'print $1 if /">\s*(.*?)\s*<\/a/si');
 Latest_Kernel_List=$(wget "http://kernel.ubuntu.com/~kernel-ppa/mainline/v$Kernel_Latest_Version" -q -O - );
 Kernel_Link=$(echo $Latest_Kernel_List | sed -e's@~~~@@g' | sed -e "s@^@http://kernel.ubuntu.com/~kernel-ppa/mainline/$Latest_Kernel/@g" | sed -e 's@<a href="linux@ <arch>http://kernel.ubuntu.com/~kernel-ppa/mainline/v@g' | sed -e "s@<arch>http://kernel.ubuntu.com/~kernel-ppa/mainline/v@ \n <arch>http://kernel.ubuntu.com/~kernel-ppa/mainline/v$Kernel_Latest_Version/linux@g" | sed -e '0,/\(^\<arch>\)/s//\n\1/');
 Kernel_Link_Architecture=$(echo $Kernel_Link | sed -e "s@_amd64.deb@</arch> @g" | sed -e "s@_i386.deb@</arch> @g" | sed -e "s@_all.deb@_all.deb</arch> @g" | awk -vRS="</arch>" '{gsub(/.*<arch.*>/,"");print}' | grep "http://" | tr ' ' '\n');
