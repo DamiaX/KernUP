@@ -1,6 +1,6 @@
 #!/bin/bash
 
-Version="1.5";
+Version="1.6";
 AppData="$HOME/.KernUP";
 AppName="kernup";
 AliasName="$HOME/.bash_aliases";
@@ -17,7 +17,7 @@ VboxDir='/etc/inid.d/vboxdrv'
 su='0';
 KernelVer='';
 DecryptPass='';
-Salt='';
+
 
 Color()
 {
@@ -35,19 +35,444 @@ if [ -f $VboxDir ] ; then
 fi;
 }
 
-GenerateSalt()
-{
-if [ -z $Salt ] ; then
-SaltRes=$(head /dev/urandom | tr -dc A-Za-z0-9 | head -c 8);
-sed -i "s@^Salt='[a-zA-Z0-9_]*';@Salt='$SaltRes';@g" $0
-fi
-}
 
 MaskandUnmaskPass()
 {
-GenerateSalt;
 if [ -z $Pass ] ; then
-CryptPass=$(echo $1 | openssl enc -aes-128-cbc -a -salt -pbkdf2 -pass pass:$Salt);
+CryptPass=$(echo $1 | openssl enc -base64);
+sed -i "s@^Pass='[a-zA-Z0-9_]*';@Pass='$CryptPass';@g" $0
+else
+DecryptPass=$(echo $Pass | openssl base64 -d);
+fi
+}
+
+Root()
+{
+if [ "$(id -u)" != "0" ]; then
+echo -e -n "\E[$Alert;1m$Information \033[0m"; 
+cd $RunDir
+if [ -z $Pass ] ; then
+echo -e "\E[$Suprise;1m$AdminPass\033[0m"; 
+read -s Password < $term
+MaskandUnmaskPass $Password;
+fi
+if [ -z $Pass ] ; then 
+echo "$Password" | sudo -S  sh -c "bash $0 $1"
+else
+echo "$DecryptPass" | sudo -S  sh -c "bash $0 $1"
+fi
+exit
+fi
+}
+
+InstallApp()
+{
+if [ ! -f "$AppData/$AppName" ] ; then
+echo -e -n "\E[$Alert;1m$Information\033[0m"; 
+echo -e -n "\E[$Text;1m $AppInstallng\033[0m ";
+echo -e "\E[$Alert;1m $Odplng\033[0m";
+read Answer < $term;
+Default_Answer "t";
+
+if [[ $Answer == "T" || $Answer == "t" || $Answer == "y" || $Answer == "Y" ]]; then
+cp -r $0 "$AppData/$AppName";
+chmod +x -f "$AppData/$AppName";
+echo "alias $AppName='$AppData/$AppName'" >> $AliasName;
+crontab -l > "$AppData/Temp/cronfile";
+echo "*/120 * * * * $AppData/$AppName -au" >> "$AppData/Temp/cronfile";
+crontab "$AppData/Temp/cronfile";
+rm -rf "$AppData/Temp/cronfile";
+fi
+fi
+}
+
+RemoveApp()
+{
+echo -e -n "\E[$Alert;1m$Information \033[0m"; 
+echo -e -n "\E[$Text;1m$AnswerRemove\033[0m ";
+echo -e "\E[$Alert;1m $Odplng\033[0m";
+read Answer;
+Default_Answer "t";
+if [[ $Answer == "T" || $Answer == "t" || $Answer == "y" || $Answer == "Y" ]]; then
+sed -i "s@alias $AppName='$AppData/$AppName'@@g" $AliasName;
+crontab -l > "$AppData/Temp/cronfile";
+sed -i "s#0 * * * * $AppData/$AppName -au##g" "$AppData/Temp/cronfile";
+crontab "$AppData/Temp/cronfile";
+rm -rf $AppData;
+fi
+}
+
+SudoSetting()
+{
+echo -e -n "\E[$Alert;1m$Information \033[0m"; 
+echo -e -n "\E[$Text;1m$RunAslng\033[0m ";
+echo -e "\E[$Alert;1m[1/2]\033[0m";
+echo -e -n "\E[$Alert;1m$Information \033[0m"; 
+echo -e "\E[$Text;1m1) sudo\033[0m";
+echo -e -n "\E[$Alert;1m$Information \033[0m"; 
+echo -e "\E[$Text;1m2) su\033[0m";
+read Answer;
+Default_Answer "1";
+if [[ $Answer == "1" ]]; then
+sed -i "s@^su='[0-9]';@su='0';@g" $0
+else
+sed -i "s@^su='[0-9]';@su='1';@g" $0
+fi
+}
+
+SudoChoose()
+{
+if [ $su == 0 ]
+then
+sudo $1
+else
+su $1
+fi
+}
+
+TestNetwork()
+{
+wget -q --spider http://google.com
+
+if [ $? != 0 ]; then
+echo -e -n "\E[$Alert;1m$Information \033[0m"; 
+echo -e "\E[$Wow;1m$Internetlng\033[0m";
+exit;
+fi
+}
+
+function Default_Answer()
+{
+if [ -z $Answer ]; then
+Answer="$1";
+fi
+}
+
+Language()
+{
+case $LANG in
+*PL*) 
+if [ ! -f "$AppData/$Lang_Name" ] ; then
+Lang_pl=$(wget "https://raw.githubusercontent.com/DamiaX/KernUP/master/KernUP.pl.lang" -q -O -);
+PL=`echo $Lang_pl > "$AppData/$Lang_Name"`;
+fi
+ ;;
+*) 
+if [ ! -f "$AppData/$Lang_Name" ] ; then
+Lang_en=$(wget "https://raw.githubusercontent.com/DamiaX/KernUP/master/KernUP.en.lang" -q -O -);
+EN=`echo $Lang_en > "$AppData/$Lang_Name"`;
+fi
+ ;;
+esac
+source "$AppData/$Lang_Name";
+}
+
+CreateData()
+{
+mkdir -p $AppData;
+mkdir -p "$AppData/Temp";
+}
+
+Check_Distro()
+{
+if [ ! -e "/usr/bin/dpkg" ] ;
+then
+echo -e -n "\E[$Alert;1m$Information \033[0m"; 
+echo -e "\E[$Wow;1m$Dist\033[0m";
+exit;
+fi
+}
+
+RefreshSystem()
+{
+Root -su;
+SudoChoose "apt-get update -y -qq";
+SudoChoose "apt-get upgrade -y -qq";	
+}
+
+SetupGenericLowlatency()
+{
+if [ -z $KernelVer ] ; then
+SettingGenericLowlatency;
+Root;
+fi
+}
+
+SettingGenericLowlatency()
+{
+echo -e -n "\E[$Alert;1m$Information \033[0m"; 
+echo -e "\E[$Action;1m$InstallGenLow\033[0m"; 
+read KernelVerChose;
+if [ -z $KernelVerChose ]; then
+KernelVerChose="1";
+fi
+sed -i "s@^KernelVer='[a-zA-Z0-9_]*';@KernelVer='$KernelVerChose';@g" $0;
+}
+
+Welcome()
+{
+clear;
+Color;
+CreateData;
+Language;
+echo -e -n "\E[28;1m [[ KernUP: \040"; echo -e -n "\E[31;1m$Version\033[0m"; echo -e -n "\E[28;1m ]]  -\040" ; echo -e "\E[$Alert;1m$EGGlng \033[0m"; 
+TestNetwork;
+SetupGenericLowlatency;
+InstallApp;
+AppUpdate;
+}
+
+CheckSum()
+{
+rm -rf "$AppData/kernup.md5";
+wget $MD5_Url -q -O "$AppData/kernup.md5";
+md5sum -c "$AppData/kernup.md5";
+if [ $? == 0 ] ; then
+rm -rf "$AppData/$Lang_Name";
+rm -rf "$AppData/kernup.md5";
+bash "$AppData/$AppName";
+else
+echo -e -n "\E[$Alert;1m$Information \033[0m"; 
+echo -e "\E[$Wow;1m$Abort\033[0m"; 
+exit
+fi
+}
+
+AppUpdate()
+{
+Server_Version=$(wget "https://raw.githubusercontent.com/DamiaX/KernUP/master/Version" -q -O -);
+New_Version=$(echo $Server_Version | tr '.' ',' | sed -e 's@,@@g');
+Actual_Version=$(echo $Version | tr '.' ',' | sed -e 's@,@@g');
+if [ $Actual_Version != $New_Version ]
+then
+echo -e -n "\E[$Alert;1m$Information\033[0m"; 
+echo -e "\E[$Wow;1m $Updatelng\033[0m";
+wget $Core_Url -q -O "$AppData/$AppName" | chmod +x -f "$AppData/$AppName";
+CheckSum;
+echo -e -n "\E[$Alert;1m$Information\033[0m"; 
+echo -e "\E[$Action;1m $Rebotlng \040";
+exit;
+fi
+}
+
+RemoveKernel()
+{
+Root -rk;
+echo -e -n "\E[$Alert;1m$Information \033[0m"; 
+echo -e -n "\E[$Suprise;1m$RemoveK_Ask \033[0m";
+echo -e "\E[$Alert;1m$Odplng\033[0m";
+
+read Answer < $term;
+Default_Answer "t";
+
+if [[ $Answer == "T" || $Answer == "t" || $Answer == "y" || $Answer == "Y" ]]; then
+apt-get remove -y --purge $(dpkg -l 'linux-image-*' | sed '/^ii/!d;/'"$(uname -r | sed "s/\(.*\)-\([^0-9]\+\)/\1/")"'/d;s/^[^ ]* [^ ]* \([^ ]*\).*/\1/;/[0-9]/!d');
+apt-get remove -y --purge $(dpkg -l 'linux-headers-*' | sed '/^ii/!d;/'"$(uname -r | sed "s/\(.*\)-\([^0-9]\+\)/\1/")"'/d;s/^[^ ]* [^ ]* \([^ ]*\).*/\1/;/[0-9]/!d');
+apt-get -y autoremove;
+apt-get -y autoclean;
+apt-get -y clean;
+
+numbermodules=$(ls /lib/modules | wc -l);
+if [[ $numbermodules != "1" ]] ; then
+modules=$(ls --sort=version /lib/modules |  head -n 1);
+rm -rf "/lib/modules/"$modules;
+update-grub;	
+fi
+fi
+}
+
+GetLink()
+{
+Kernel_List_Get=$(wget -qO- 'http://kernel.org'); 
+Kernel_Latest_Version=$(echo $Kernel_List_Get |  perl -l -0777 -ne 'print $1 if /<td id="latest_link">\s*(.*?)\s*<\/td/si' |
+  perl -l -0777 -ne 'print $1 if /">\s*(.*?)\s*<\/a/si');
+Latest_Kernel_List=$(wget "http://kernel.ubuntu.com/~kernel-ppa/mainline/v$Kernel_Latest_Version" -q -O - );
+Kernel_Link=$(echo $Latest_Kernel_List | sed -e's@~~~@@g' | sed -e "s@^@http://kernel.ubuntu.com/~kernel-ppa/mainline/$Latest_Kernel/@g" | sed -e 's@<a href="linux@ <arch>http://kernel.ubuntu.com/~kernel-ppa/mainline/v@g' | sed -e "s@<arch>http://kernel.ubuntu.com/~kernel-ppa/mainline/v@ \n <arch>http://kernel.ubuntu.com/~kernel-ppa/mainline/v$Kernel_Latest_Version/linux@g" | sed -e '0,/\(^\<arch>\)/s//\n\1/');
+Kernel_Link_Architecture=$(echo $Kernel_Link | sed -e "s@_amd64.deb@</arch> @g" | sed -e "s@_i386.deb@</arch> @g" | sed -e "s@_all.deb@_all.deb</arch> @g" | awk -vRS="</arch>" '{gsub(/.*<arch.*>/,"");print}' | grep "http://" | tr ' ' '\n');
+Headers_Download_Url_Generic=$(echo $Kernel_Link_Architecture | tr ' ' '\n' | grep "headers" | grep "generic" | sed -n -e '1p');
+Image_Download_Url_Generic=$(echo $Kernel_Link_Architecture | tr ' ' '\n' | grep "image" | grep "generic" | sed -n -e '1p');
+Module_Download_Url_Generic=$(echo $Kernel_Link_Architecture | tr ' ' '\n' | grep "modules" | grep "generic" | sed -n -e '1p');
+Headers_Download_Url_Lowlatency=$(echo $Kernel_Link_Architecture | tr ' ' '\n' | grep "headers" | grep "lowlatency" | sed -n -e '1p');
+Image_Download_Url_Lowlatency=$(echo $Kernel_Link_Architecture | tr ' ' '\n' | grep "image" | grep "lowlatency" | sed -n -e '1p');
+Module_Download_Url_Lowlatency=$(echo $Kernel_Link_Architecture | tr ' ' '\n' | grep "modules" | grep "lowlatency" | sed -n -e '1p');
+Kernel_Download_Url_All=$(echo $Kernel_Link_Architecture | tr ' ' '\n' | grep "all" | sed -n -e '1p');
+DownloadKernel;
+}
+
+InstallKernel()
+{
+if find $AppData/Temp -mindepth 1 | read ; then
+echo -e -n "\E[$Alert;1m$Information \033[0m"; 
+echo -e -n "\E[$Suprise;1m$InstallKernelAsk \033[0m";
+echo -e "\E[$Alert;1m$Odplng\033[0m";
+
+if [[ $1 != "1" ]] ; then
+read Answer < $term;
+Default_Answer "t";
+
+if [[ $Answer == "T" || $Answer == "t" || $Answer == "y" || $Answer == "Y" ]]; then
+Root -ik;
+
+
+cd "$AppData/Temp";
+SudoChoose "dpkg -i *.deb";
+else
+echo -e -n "\E[$Alert;1m$Information \033[0m"; 
+echo -e "\E[$Wow;1m$Abort\033[0m"; 
+exit
+fi;
+
+else
+cd "$AppData/Temp";
+SudoChoose "dpkg -i *.deb";
+fi;
+
+if [ $? == 0 ] ; then
+echo -e -n "\E[$Alert;1m$Information\033[0m"; 
+echo -e "\E[$Action;1m $Successlng \040"; 
+
+else
+echo -e -n "\E[$Alert;1m$Information\033[0m"; 
+echo -e "\E[$Wow;1m $Abortlng\033[0m"; 
+fi;
+
+cd $HOME;
+rm -rf "$AppData/Temp";
+fi
+}
+
+DownloadKernel()
+{
+
+if [ $KernelInstalled == $Kernel_Latest_Version ] ; then
+echo -e -n "\E[$Alert;1m$Information\033[0m"; 
+echo -e "\E[$Action;1m $Gitlng \040"; 
+else
+ 
+if [ -e "/usr/bin/notify-send" ] ; then
+notify-send -i stock_lock-broken "KernUP" "$Chicklng"
+fi
+
+echo -e -n "\E[$Alert;1m$Information \033[0m";
+echo -e "\E[$Wow;1m$Chicklng \033[0m" ;
+echo -e -n "\E[$Alert;1m$Information \033[0m"; 
+echo -e -n "\E[$Text;1m$Momlng \0$Alert[0m"; 
+echo -e -n "\E[$Suprise;1m$KernelInstalled\033[0m"; 
+echo -e -n "\E[$Text;1m,$Givelng \0$Alert[0m"; 
+echo -e -n "\E[$Suprise;1m$Kernel_Latest_Version\033[0m";
+echo -e "\E[$Suprise;1m! \033[0m";
+echo -e -n "\E[$Alert;1m$Information \033[0m"; 
+echo -e -n "\E[$Action;1m$Downloadlng\040"; 
+
+cd "$AppData/Temp";
+
+if  [ $Architecture == "x86_64" ] ; then
+if [[ $KernelVer == '1' ]]; then 
+echo -e "\E[$Text;1m$Kernel_Latest_Version (Generic) \040"; 
+
+wget -q -c "$Headers_Download_Url_Generic"'_amd64.deb';
+wget -q -c "$Image_Download_Url_Generic"'_amd64.deb';
+wget -q -c "$Kernel_Download_Url_All";
+wget -q -c "$Module_Download_Url_Generic"'_amd64.deb';
+else
+echo -e "\E[$Text;1m$Kernel_Latest_Version (Lowlatency) \040"; 
+wget -q -c "$Headers_Download_Url_Lowlatency"'_amd64.deb';
+wget -q -c "$Image_Download_Url_Lowlatency"'_amd64.deb';
+wget -q -c "$Kernel_Download_Url_All";
+wget -q -c "$Module_Download_Url_Lowlatency"'_amd64.deb';
+fi;
+
+fi;
+
+if [ $Architecture == "i686" ] || [ $Architecture == "i386" ] || [ $Architecture == "x86" ] ; then
+if [[ $KernelVer == '1' ]]; then 
+echo -e "\E[$Text;1m$Kernel_Latest_Version (Generic) \040"; 
+wget -q -c "$Headers_Download_Url_Generic"'_i386.deb';
+wget -q -c "$Image_Download_Url_Generic"'_i386.deb';
+wget -q -c "$Kernel_Download_Url_All";
+wget -q -c "$Module_Download_Url_Generic"'_i386.deb';
+else
+echo -e "\E[$Text;1m$Kernel_Latest_Version (Lowlatency) \040"; 
+wget -q -c "$Headers_Download_Url_Lowlatency"'_i386.deb';
+wget -q -c "$Image_Download_Url_Lowlatency"'_i386.deb';
+wget -q -c "$Kernel_Download_Url_All";
+wget -q -c "$Module_Download_Url_Lowlatency"'_i386.deb';
+fi;
+fi;
+
+echo -e -n "\E[$Alert;1m$Information \033[0m"; 
+echo -e "\E[$Text;1m$FinishDownloadlng\040"; 
+fi;
+}
+
+while [ "$1" ] ; do 
+clear;
+Color;
+CreateData;
+Language;
+echo -e -n "\E[28;1m [[ KernUP: \040"; echo -e -n "\E[31;1m$Version\033[0m"; echo -e -n "\E[28;1m ]]  -\040" ; echo -e "\E[$Alert;1m$EGGlng \033[0m"; 
+case "$1" in
+  "--help"|"-h")
+echo -e -n "\E[$Alert;1m$Information \033[0m"; 
+echo -e "\E[$Action;1m-u, --uninstall: $DleteText $AppName \033[0m"; 
+echo -e -n "\E[$Alert;1m$Information \033[0m"; 
+echo -e "\E[$Action;1m-rk, --removekernel:  $RemoveText\033[0m"; 
+echo -e -n "\E[$Alert;1m$Information \033[0m"; 
+echo -e "\E[$Action;1m-ss, --sudosetting: $sudosulng\033[0m"; 
+echo -e -n "\E[$Alert;1m$Information \033[0m"; 
+echo -e "\E[$Action;1m-rvb, --recompilevb: $RecompileVB\033[0m"; 
+echo -e -n "\E[$Alert;1m$Information \033[0m"; 
+echo -e "\E[$Action;1m-kv, --kernelversion: $GenLow\033[0m"; 
+exit;;
+
+"--uninstall"|"-u") 
+RemoveApp;
+exit;;
+
+"--kernelversion"|"-kv") 
+SettingGenericLowlatency;
+exit;;
+
+"--removekernel"|"-rk") 
+RemoveKernel;
+exit;;
+
+"--autorun"|"-au")
+Welcome;
+GetLink;
+InstallKernel 1;
+exit;;
+
+"--recompilevb"|"-rvb")
+RecompileVirtualbox;
+exit;;
+
+"--sudosetting"|"-ss")
+SudoSetting;
+exit;;
+
+"--installkernel"|"-ik")
+InstallKernel 1;
+exit;;
+
+"--systemupdate"|"-su")
+RefreshSystem;
+exit;;
+*)    
+  echo -e -n "\E[$Alert;1m$Information \033[0m"; 
+  echo -e "\E[$Wow;1m$UnknowOption '$1'\033[0m";  
+  echo -e -n "\E[$Alert;1m$Information \033[0m";    
+  echo -e "\E[$Action;1m$RunText '$AppName --help ' $InformationText\033[0m";             
+
+      exit;
+      ;;
+    esac
+done
+
+Welcome;
+GetLink;
+
+InstallKernel 0;
 sed -i "s@^Pass='[a-zA-Z0-9_]*';@Pass='$CryptPass';@g" $0
 else
 DecryptPass=$(echo $Pass | openssl enc -aes-128-cbc -a -d -salt -pbkdf2 -pass pass:$Salt);
