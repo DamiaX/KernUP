@@ -1,6 +1,6 @@
 #!/bin/bash
 
-Version="1.9.1";
+Version="1.9.2";
 AppData="$HOME/.KernUP";
 AppName="kernup";
 AliasName="$HOME/.bash_aliases";
@@ -286,7 +286,7 @@ then
 echo -e -n "\E[$Alert;1m$Information\033[0m"; 
 echo -e "\E[$Wow;1m $Updatelng\033[0m";
 SaveSettings;
-wget $Core_Url -q -O "$AppData/$AppName" | chmod +x -f "$AppData/$AppName";
+wget $Core_Url -q -O $0| chmod +x -f $0;
 #CheckSum;
 echo -e -n "\E[$Alert;1m$Information\033[0m"; 
 echo -e "\E[$Action;1m $Rebotlng \040";
