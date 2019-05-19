@@ -29,15 +29,15 @@ Execute.
 Terminal Install:<br>
 <blockquote>
 Step 1: Download (Method 1/2: Use <code>wget</code> to download a install script and give permissions to run)
-<pre><code>wget https://raw.githubusercontent.com/DamiaX/KernUP/master/KernUP -O KernUP; 
-chmod +x KernUP</code></pre>
+<pre><code>wget https://raw.githubusercontent.com/DamiaX/KernUP/master/KernUP -O kernup; 
+chmod +x kernup</code></pre>
 
 Step 1: Download (Method 2/2: Use <code>curl</code> to download a install script and give permissions to run)
-<pre><code>curl https://raw.githubusercontent.com/DamiaX/KernUP/master/KernUP > KernUP;
-chmod +x KernUP</code></pre>
+<pre><code>curl https://raw.githubusercontent.com/DamiaX/KernUP/master/KernUP > kernup;
+chmod +x kernup</code></pre>
 
 Step 2: Run  <code>KernUP</code> .
-<pre><code>./KernUP</code></pre>
+<pre><code>./kernup</code></pre>
 </blockquote>
 
 <hr>
