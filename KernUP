@@ -1,6 +1,6 @@
 #!/bin/bash
 
-Version="1.8";
+Version="1.9";
 AppData="$HOME/.KernUP";
 AppName="kernup";
 AliasName="$HOME/.bash_aliases";
@@ -10,6 +10,7 @@ Architecture=`uname -m`;
 Core_Url="https://raw.githubusercontent.com/DamiaX/KernUP/master/KernUP";
 MD5_Url="https://raw.githubusercontent.com/DamiaX/KernUP/master/kernup.md5";
 Lang_Name="KernUP.lang";
+SettingFile="$AppData/setting.kernup";
 Pass='';
 term="/dev/tty";
 RunDir=`echo $PWD`;
@@ -17,6 +18,26 @@ VboxDir='/etc/inid.d/vboxdrv'
 su='0';
 KernelVer='';
 DecryptPass='';
+
+SaveSettings()
+{
+if [ -f $SettingFile ]; then
+rm -rf $SettingFile;
+fi
+echo $Pass > $SettingFile
+echo $KernelVer >> $SettingFile
+}
+
+LoadSettings()
+{
+if [ -f $SettingFile ]; then
+LoadPass=$(head -n1 $SettingFile);
+KernelLoad=$(tail -n1 $SettingFile);
+sed -i "s@^Pass='';@Pass='$LoadPass';@g" $0
+sed -i "s@^KernelVer='';@KernelVer='$KernelLoad';@g" $0
+rm -rf $SettingFile;
+fi
+}
 
 
 Color()
@@ -214,6 +235,7 @@ Welcome()
 clear;
 Color;
 CreateData;
+LoadSettings;
 Language;
 echo -e -n "\E[28;1m [[ KernUP: \040"; echo -e -n "\E[31;1m$Version\033[0m"; echo -e -n "\E[28;1m ]]  -\040" ; echo -e "\E[$Alert;1m$EGGlng \033[0m"; 
 CheckReboot;
@@ -263,6 +285,7 @@ if [ $Actual_Version != $New_Version ]
 then
 echo -e -n "\E[$Alert;1m$Information\033[0m"; 
 echo -e "\E[$Wow;1m $Updatelng\033[0m";
+SaveSettings;
 wget $Core_Url -q -O "$AppData/$AppName" | chmod +x -f "$AppData/$AppName";
 CheckSum;
 echo -e -n "\E[$Alert;1m$Information\033[0m"; 
