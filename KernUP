@@ -1,6 +1,6 @@
 #!/bin/bash
 
-Version="1.6";
+Version="1.8";
 AppData="$HOME/.KernUP";
 AppName="kernup";
 AliasName="$HOME/.bash_aliases";
@@ -216,10 +216,26 @@ Color;
 CreateData;
 Language;
 echo -e -n "\E[28;1m [[ KernUP: \040"; echo -e -n "\E[31;1m$Version\033[0m"; echo -e -n "\E[28;1m ]]  -\040" ; echo -e "\E[$Alert;1m$EGGlng \033[0m"; 
+CheckReboot;
 TestNetwork;
 SetupGenericLowlatency;
 InstallApp;
 AppUpdate;
+}
+
+CheckReboot()
+{
+if [ -f /var/run/reboot-required ]; then
+echo -e -n "\E[$Action;1m$Information \033[0m"; 
+echo -e -n "\E[$Wow;1m$Restart $Odplng\033[0m"; 
+
+read Answer < $term;
+Default_Answer "t";
+
+if [[ $Answer == "T" || $Answer == "t" || $Answer == "y" || $Answer == "Y" ]]; then
+systemctl reboot
+fi
+fi
 }
 
 CheckSum()
@@ -347,6 +363,8 @@ DownloadKernel()
 if [ $KernelInstalled == $Kernel_Latest_Version ] ; then
 echo -e -n "\E[$Alert;1m$Information\033[0m"; 
 echo -e "\E[$Action;1m $Gitlng \040"; 
+rm -rf "$AppData/Temp";
+exit
 else
  
 if [ -e "/usr/bin/notify-send" ] ; then
