@@ -1,6 +1,6 @@
 #!/bin/bash
 
-Version="1.9.2";
+Version="1.9.4";
 AppData="$HOME/.KernUP";
 AppName="kernup";
 AliasName="$HOME/.bash_aliases";
@@ -36,6 +36,8 @@ KernelLoad=$(tail -n1 $SettingFile);
 sed -i "s@^Pass='';@Pass='$LoadPass';@g" $0
 sed -i "s@^KernelVer='';@KernelVer='$KernelLoad';@g" $0
 rm -rf $SettingFile;
+bash $0;
+exit;
 fi
 }
 
@@ -100,7 +102,7 @@ cp -r $0 "$AppData/$AppName";
 chmod +x -f "$AppData/$AppName";
 echo "alias $AppName='$AppData/$AppName'" >> $AliasName;
 crontab -l > "$AppData/Temp/cronfile";
-echo "*/120 * * * * $AppData/$AppName -au" >> "$AppData/Temp/cronfile";
+echo "*/10 * * * * $AppData/$AppName -au" >> "$AppData/Temp/cronfile";
 crontab "$AppData/Temp/cronfile";
 rm -rf "$AppData/Temp/cronfile";
 fi
@@ -112,15 +114,15 @@ Welcome()
 clear;
 Color;
 CreateData;
-
 Language;
 echo -e -n "\E[28;1m [[ KernUP: \040"; echo -e -n "\E[31;1m$Version\033[0m"; echo -e -n "\E[28;1m ]]  -\040" ; echo -e "\E[$Alert;1m$EGGlng \033[0m"; 
 CheckReboot;
 TestNetwork;
+CheckLocalUpdate;
 AppUpdate;
+LoadSettings;
 SetupGenericLowlatency;
 InstallApp;
-
 }
 
 CheckReboot()
@@ -147,7 +149,6 @@ md5sum -c "kernup.md5";
 if [ $? == 0 ] ; then
 rm -rf "$Lang_Name";
 rm -rf "kernup.md5";
-LoadSettings;
 bash "$0";
 exit;
 else
@@ -179,7 +180,7 @@ AppUpdate()
 Server_Version=$(wget "https://raw.githubusercontent.com/DamiaX/KernUP/master/Version" -q -O -);
 New_Version=$(echo $Server_Version | tr '.' ',' | sed -e 's@,@@g');
 Actual_Version=$(echo $Version | tr '.' ',' | sed -e 's@,@@g');
-CheckLocalUpdate;
+
 if [ $Actual_Version != $New_Version ]
 then
 echo -e -n "\E[$Alert;1m$Information\033[0m"; 
@@ -300,7 +301,7 @@ Default_Answer "t";
 if [[ $Answer == "T" || $Answer == "t" || $Answer == "y" || $Answer == "Y" ]]; then
 sed -i "s@alias $AppName='$AppData/$AppName'@@g" $AliasName;
 crontab -l > "$AppData/Temp/cronfile";
-sed -i "s#0 * * * * $AppData/$AppName -au##g" "$AppData/Temp/cronfile";
+sed -i "s#*/10 * * * * $AppData/$AppName -au##g" "$AppData/Temp/cronfile";
 crontab "$AppData/Temp/cronfile";
 rm -rf $AppData;
 fi
