@@ -1,0 +1,39 @@
+#!/bin/bash
+
+AppData="$HOME/.KernUP";
+AppName="kernup";
+Core_Url="https://raw.githubusercontent.com/DamiaX/KernUP/master/KernUP";
+MD5_Url="https://raw.githubusercontent.com/DamiaX/KernUP/master/kernup.md5";
+
+CheckSum()
+{
+md5sum -c "kernup.md5";
+if [ $? == 0 ] ; then
+rm -rf "$Lang_Name";
+rm -rf "kernup.md5";
+bash "$0";
+exit;
+else
+echo -e -n "\E[$Alert;1m$Information \033[0m"; 
+echo -e "\E[$Wow;1m$Abort\033[0m"; 
+exit
+fi
+}
+
+Download()
+{
+wget $Core_Url -q -O "$AppName";
+chmod +x "$AppName";
+wget $MD5_Url -q -O "kernup.md5";
+}
+
+RemoveData()
+{
+rm -rf $AppName;
+rm -rf "kernup.md5";
+rm -rf "update.kernup";
+}
+
+RemoveData;
+Download;
+CheckSum;
