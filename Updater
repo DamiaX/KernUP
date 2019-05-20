@@ -42,5 +42,3 @@ rm -rf "kernup.md5";
 RemoveData;
 Download;
 CheckSum;
-
-
