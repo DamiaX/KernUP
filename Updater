@@ -6,10 +6,10 @@ MD5_Url="https://raw.githubusercontent.com/DamiaX/KernUP/master/kernup.md5";
 
 CheckSum()
 {
-
 md5sum -c "kernup.md5";
 
 if [ $? == 0 ] ; then
+rm -rf $AppName;
 rm -rf "$Lang_Name";
 rm -rf "kernup.md5";
 mv "$AppName-new" "$AppName";
@@ -17,8 +17,6 @@ rm -rf $0;
 bash "$AppName";
 exit;
 else
-echo -e -n "\E[$Alert;1m$Information \033[0m"; 
-echo -e "\E[$Wow;1m$Abort\033[0m"; 
 rm -rf "kernup.md5";
 rm -rf "$AppName-new";
 rm -rf $0;
@@ -33,12 +31,8 @@ chmod +x "$AppName-new";
 wget $MD5_Url -q -O "kernup.md5";
 }
 
-RemoveData()
-{
-rm -rf $AppName;
 rm -rf "kernup.md5";
-}
+killall -q $AppName;
 
-RemoveData;
 Download;
 CheckSum;
