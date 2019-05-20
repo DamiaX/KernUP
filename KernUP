@@ -1,6 +1,6 @@
 #!/bin/bash
 
-Version="1.9.4";
+Version="1.9";
 AppData="$HOME/.KernUP";
 AppName="kernup";
 AliasName="$HOME/.bash_aliases";
@@ -158,6 +158,14 @@ exit
 fi
 }
 
+Preload()
+{
+if [ -f "$AppName-new" ]; then
+mv "$AppName-new" "$AppName";
+bash "$AppName"
+exit;
+}
+
 CheckLocalUpdate()
 {
 
@@ -165,13 +173,11 @@ if [ -f "checksum.kernup" ] ; then
 CheckSum;
 fi
 
-if [ -f "$0-new" ]; then
-rm -rf $0;
-mv "$0-new" "$0";
-touch "checksum.kernup";
-chmod +x $0;
-bash $0;
-exit
+if [ -f "AppName-new" ]; then
+rm -rf $AppName;
+chmod +x "$AppName-new";
+Preload;
+exit;
 fi
 }
 
@@ -186,8 +192,8 @@ then
 echo -e -n "\E[$Alert;1m$Information\033[0m"; 
 echo -e "\E[$Wow;1m $Updatelng\033[0m";
 SaveSettings;
-wget $Core_Url -q -O "$0-new" | chmod +x -f "$0-new";
-bash "$0-new"
+wget $Core_Url -q -O "$AppName-new" | chmod +x -f "$AppName-new";
+bash "$AppName-new"
 exit;
 echo -e -n "\E[$Alert;1m$Information\033[0m"; 
 echo -e "\E[$Action;1m $Rebotlng \040";
