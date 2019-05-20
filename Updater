@@ -14,12 +14,14 @@ if [ $? == 0 ] ; then
 rm -rf "$Lang_Name";
 rm -rf "kernup.md5";
 mv "$AppName-new" "$AppName";
+rm -rf $0;
 bash "$AppName";
 exit;
 else
 echo -e -n "\E[$Alert;1m$Information \033[0m"; 
 echo -e "\E[$Wow;1m$Abort\033[0m"; 
 rm -rf "kernup.md5";
+rm -rf $0;
 exit
 fi
 }
@@ -41,4 +43,4 @@ RemoveData;
 Download;
 CheckSum;
 
-rm -rf $0;
+
