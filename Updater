@@ -13,6 +13,7 @@ md5sum -c "kernup.md5";
 if [ $? == 0 ] ; then
 rm -rf "$Lang_Name";
 rm -rf "kernup.md5";
+rm -rf $0;
 bash "$AppName";
 exit;
 else
@@ -33,7 +34,6 @@ RemoveData()
 {
 rm -rf $AppName;
 rm -rf "kernup.md5";
-rm -rf $0;
 }
 
 RemoveData;
