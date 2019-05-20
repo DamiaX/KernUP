@@ -5,6 +5,22 @@ AppName="kernup";
 Core_Url="https://raw.githubusercontent.com/DamiaX/KernUP/master/KernUP";
 MD5_Url="https://raw.githubusercontent.com/DamiaX/KernUP/master/kernup.md5";
 RunDir=`echo $PWD`;
+InstallDir="$HOME/.KernUP";
+AppInstall="$HOME/.KernUP/kernup";
+
+CheckInstall()
+{
+if [ -f $AppInstall ]; then
+rm -rf $AppInstall;
+rm -rf "$InstallDir/$AppName";
+rm -rf "$InstallDir/$Lang_Name";
+rm -rf "$InstallDir/kernup.md5";
+mv "$RunDir/$AppName-new" "$AppInstall";
+bash $AppInstall;
+rm -rf $0;
+exit;
+fi
+}
 
 CheckSum()
 {
@@ -14,6 +30,7 @@ if [ $? == 0 ] ; then
 rm -rf "$RunDir/$AppName";
 rm -rf "$RunDir/$Lang_Name";
 rm -rf "$RunDir/kernup.md5";
+CheckInstall;
 mv "$RunDir/$AppName-new" "$RunDir/$AppName";
 rm -rf $0;
 bash "$RunDir/$AppName";
