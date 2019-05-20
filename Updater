@@ -3,22 +3,22 @@
 AppName="kernup";
 Core_Url="https://raw.githubusercontent.com/DamiaX/KernUP/master/KernUP";
 MD5_Url="https://raw.githubusercontent.com/DamiaX/KernUP/master/kernup.md5";
-
+RunDir=`echo $PWD`;
 CheckSum()
 {
 md5sum -c "kernup.md5";
 
 if [ $? == 0 ] ; then
-rm -rf $AppName;
-rm -rf "$Lang_Name";
-rm -rf "kernup.md5";
-mv "$AppName-new" "$AppName";
+rm -rf "$RunDir/$AppName";
+rm -rf "$RunDir/$Lang_Name";
+rm -rf "$RunDir/kernup.md5";
+mv "$RunDir/$AppName-new" "$RunDir/AppName";
 rm -rf $0;
-bash "$AppName";
+bash "$RunDir/$AppName";
 exit;
 else
-rm -rf "kernup.md5";
-rm -rf "$AppName-new";
+rm -rf "$RunDir/kernup.md5";
+rm -rf "$RunDir/$AppName-new";
 rm -rf $0;
 exit
 fi
@@ -26,12 +26,12 @@ fi
 
 Download()
 {
-wget $Core_Url -q -O "$AppName-new";
-chmod +x "$AppName-new";
-wget $MD5_Url -q -O "kernup.md5";
+wget $Core_Url -q -O "$RunDir/$AppName-new";
+chmod +x "$RunDir/$AppName-new";
+wget $MD5_Url -q -O "$RunDir/kernup.md5";
 }
 
-rm -rf "kernup.md5";
+rm -rf "$RunDir/kernup.md5";
 killall -q $AppName;
 
 Download;
