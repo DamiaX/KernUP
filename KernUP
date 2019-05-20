@@ -1,6 +1,6 @@
 #!/bin/bash
 
-Version="1.9";
+Version="1.9.1";
 AppData="$HOME/.KernUP";
 AppName="kernup";
 AliasName="$HOME/.bash_aliases";
@@ -162,22 +162,26 @@ Preload()
 {
 if [ -f "$AppName-new" ]; then
 mv "$AppName-new" "$AppName";
-bash "$AppName"
+touch "checksum.kernup";
+bash "$AppName";
 exit;
+fi
 }
 
 CheckLocalUpdate()
 {
 
-if [ -f "checksum.kernup" ] ; then
-CheckSum;
-fi
 
 if [ -f "AppName-new" ]; then
 rm -rf $AppName;
 chmod +x "$AppName-new";
 Preload;
 exit;
+fi
+
+
+if [ -f "checksum.kernup" ] ; then
+CheckSum;
 fi
 }
 
