@@ -13,20 +13,21 @@ md5sum -c "kernup.md5";
 if [ $? == 0 ] ; then
 rm -rf "$Lang_Name";
 rm -rf "kernup.md5";
-rm -rf $0;
-bash "$AppName";
+mv "$AppName-new" "$AppName";
+bash "$AppName-new";
 exit;
 else
 echo -e -n "\E[$Alert;1m$Information \033[0m"; 
 echo -e "\E[$Wow;1m$Abort\033[0m"; 
+rm -rf "kernup.md5";
 exit
 fi
 }
 
 Download()
 {
-wget $Core_Url -q -O "$AppName";
-chmod +x "$AppName";
+wget $Core_Url -q -O "$AppName-new";
+chmod +x "$AppName-new";
 wget $MD5_Url -q -O "kernup.md5";
 }
 
@@ -39,3 +40,5 @@ rm -rf "kernup.md5";
 RemoveData;
 Download;
 CheckSum;
+
+rm -rf $0;
