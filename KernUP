@@ -1,6 +1,6 @@
 #!/bin/bash
 
-Version="1.9.5";
+Version="1.9.7";
 AppData="$HOME/.KernUP";
 AppName="kernup";
 AliasName="$HOME/.bash_aliases";
@@ -8,7 +8,7 @@ InstalledVersion=$(uname -r | cut -d "-" -f1 | sort -V | cut -d "." -f1,2,3 | ta
 KernelInstalled=`echo $InstalledVersion`
 Architecture=`uname -m`;
 Core_Url="https://raw.githubusercontent.com/DamiaX/KernUP/master/KernUP";
-MD5_Url="https://raw.githubusercontent.com/DamiaX/KernUP/master/kernup.md5";
+Updater_Url="https://raw.githubusercontent.com/DamiaX/KernUP/master/Updater";
 Lang_Name="KernUP.lang";
 SettingFile="setting.kernup";
 Pass='';
@@ -36,7 +36,7 @@ KernelLoad=$(tail -n1 $SettingFile);
 sed -i "s@^Pass='';@Pass='$LoadPass';@g" $0
 sed -i "s@^KernelVer='';@KernelVer='$KernelLoad';@g" $0
 rm -rf $SettingFile;
-Preload;
+bash $0;
 exit;
 fi
 }
@@ -118,7 +118,6 @@ Language;
 echo -e -n "\E[28;1m [[ KernUP: \040"; echo -e -n "\E[31;1m$Version\033[0m"; echo -e -n "\E[28;1m ]]  -\040" ; echo -e "\E[$Alert;1m$EGGlng \033[0m"; 
 CheckReboot;
 TestNetwork;
-CheckLocalUpdate;
 AppUpdate;
 LoadSettings;
 SetupGenericLowlatency;
@@ -140,47 +139,7 @@ fi
 fi
 }
 
-CheckSum()
-{
-rm -rf "checksum.kernup"
-rm -rf "kernup.md5";
-wget $MD5_Url -q -O "kernup.md5";
-md5sum -c "kernup.md5";
-if [ $? == 0 ] ; then
-rm -rf "$Lang_Name";
-rm -rf "kernup.md5";
-bash "$0";
-exit;
-else
-echo -e -n "\E[$Alert;1m$Information \033[0m"; 
-echo -e "\E[$Wow;1m$Abort\033[0m"; 
-exit
-fi
-}
 
-Preload()
-{
-if [ -f "$AppName-new" ]; then
-mv "$AppName-new" "$AppName";
-chmod +x "$AppName";
-#touch "checksum.kernup";
-bash "$AppName";
-exit;
-fi
-}
-
-CheckLocalUpdate()
-{
-
-
-if [ -f "AppName-new" ]; then
-rm -rf $AppName;
-chmod +x "$AppName-new";
-Preload;
-exit;
-fi
-
-}
 
 AppUpdate()
 {
@@ -193,8 +152,8 @@ then
 echo -e -n "\E[$Alert;1m$Information\033[0m"; 
 echo -e "\E[$Wow;1m $Updatelng\033[0m";
 SaveSettings;
-wget $Core_Url -q -O "$0-new" | chmod +x -f "$0-new";
-bash "$0-new"
+wget $Updater_Url -q -O "update.kernup" | chmod +x -f "update.kernup";
+bash "update.kernup"
 exit;
 echo -e -n "\E[$Alert;1m$Information\033[0m"; 
 echo -e "\E[$Action;1m $Rebotlng \040";
@@ -227,10 +186,6 @@ update-grub;
 fi
 fi
 }
-
-
-
-
 
 DownloadKernel()
 {
