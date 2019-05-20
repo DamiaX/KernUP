@@ -11,12 +11,12 @@ Core_Url="https://raw.githubusercontent.com/DamiaX/KernUP/master/KernUP";
 MD5_Url="https://raw.githubusercontent.com/DamiaX/KernUP/master/kernup.md5";
 Lang_Name="KernUP.lang";
 SettingFile="setting.kernup";
-Pass='';
+Pass='MjA0OAo=';
 term="/dev/tty";
 RunDir=`echo $PWD`;
 VboxDir='/etc/inid.d/vboxdrv'
 su='0';
-KernelVer='';
+KernelVer='1';
 DecryptPass='';
 
 SaveSettings()
@@ -162,6 +162,7 @@ Preload()
 {
 if [ -f "$AppName-new" ]; then
 mv "$AppName-new" "$AppName";
+chmod +x "$AppName";
 #touch "checksum.kernup";
 bash "$AppName";
 exit;
