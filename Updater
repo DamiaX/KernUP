@@ -1,5 +1,6 @@
 #!/bin/bash
 
+Lang_Name="KernUP.lang";
 AppName="kernup";
 Core_Url="https://raw.githubusercontent.com/DamiaX/KernUP/master/KernUP";
 MD5_Url="https://raw.githubusercontent.com/DamiaX/KernUP/master/kernup.md5";
@@ -10,17 +11,17 @@ CheckSum()
 md5sum -c "kernup.md5";
 
 if [ $? == 0 ] ; then
-rm -rf "$RunDir/$AppName";
-rm -rf "$RunDir/$Lang_Name";
-rm -rf "$RunDir/kernup.md5";
+#rm -rf "$RunDir/$AppName";
+#rm -rf "$RunDir/$Lang_Name";
+#rm -rf "$RunDir/kernup.md5";
 mv "$RunDir/$AppName-new" "$RunDir/$AppName";
-rm -rf $0;
+#rm -rf $0;
 bash "$RunDir/$AppName";
 exit;
 else
-rm -rf "$RunDir/kernup.md5";
-rm -rf "$RunDir/$AppName-new";
-rm -rf $0;
+#rm -rf "$RunDir/kernup.md5";
+#rm -rf "$RunDir/$AppName-new";
+#rm -rf $0;
 exit
 fi
 }
