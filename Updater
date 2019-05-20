@@ -1,6 +1,5 @@
 #!/bin/bash
 
-AppData="$HOME/.KernUP";
 AppName="kernup";
 Core_Url="https://raw.githubusercontent.com/DamiaX/KernUP/master/KernUP";
 MD5_Url="https://raw.githubusercontent.com/DamiaX/KernUP/master/kernup.md5";
@@ -21,6 +20,7 @@ else
 echo -e -n "\E[$Alert;1m$Information \033[0m"; 
 echo -e "\E[$Wow;1m$Abort\033[0m"; 
 rm -rf "kernup.md5";
+rm -rf "$AppName-new";
 rm -rf $0;
 exit
 fi
