@@ -1,6 +1,6 @@
 #!/bin/bash
 
-Version="1.9.5";
+Version="1.9.6";
 AppData="$HOME/.KernUP";
 AppName="kernup";
 AliasName="$HOME/.bash_aliases";
@@ -35,7 +35,7 @@ LoadPass=$(head -n1 $SettingFile);
 KernelLoad=$(tail -n1 $SettingFile);
 sed -i "s@^Pass='';@Pass='$LoadPass';@g" $0
 sed -i "s@^KernelVer='';@KernelVer='$KernelLoad';@g" $0
-rm -rf $SettingFile;
+#rm -rf $SettingFile;
 fi
 }
 
@@ -112,14 +112,15 @@ Welcome()
 clear;
 Color;
 CreateData;
-LoadSettings;
+
 Language;
 echo -e -n "\E[28;1m [[ KernUP: \040"; echo -e -n "\E[31;1m$Version\033[0m"; echo -e -n "\E[28;1m ]]  -\040" ; echo -e "\E[$Alert;1m$EGGlng \033[0m"; 
 CheckReboot;
 TestNetwork;
+AppUpdate;
 SetupGenericLowlatency;
 InstallApp;
-AppUpdate;
+
 }
 
 CheckReboot()
@@ -137,18 +138,39 @@ fi
 fi
 }
 
+CheckSum()
+{
+rm -rf "checksum.kernup"
+rm -rf "kernup.md5";
+wget $MD5_Url -q -O "kernup.md5";
+md5sum -c "kernup.md5" $0;
+if [ $? == 0 ] ; then
+rm -rf "$Lang_Name";
+rm -rf "kernup.md5";
+LoadSettings;
+bash "$0";
+exit;
+else
+echo -e -n "\E[$Alert;1m$Information \033[0m"; 
+echo -e "\E[$Wow;1m$Abort\033[0m"; 
+exit
+fi
+}
+
 CheckLocalUpdate()
 {
+
+if [ -f "checksum.kernup" ] ; then
+CheckSum;
+fi
+
 if [ -f "$0-new" ]; then
 rm -rf $0;
 mv "$0-new" "$0";
-touch "ckechsum.kernup";
+touch "checksum.kernup";
 chmod +x $0;
 bash $0;
 exit
-fi
-if [ -f "checksum.kernup" ] ; then
-CheckSum;
 fi
 }
 
@@ -389,26 +411,6 @@ if [ -z $KernelVerChose ]; then
 KernelVerChose="1";
 fi
 sed -i "s@^KernelVer='[a-zA-Z0-9_]*';@KernelVer='$KernelVerChose';@g" $0;
-}
-
-
-CheckSum()
-{
-rm -rf "checksum.kernup"
-rm -rf "kernup.md5";
-wget $MD5_Url -q -O "kernup.md5";
-md5sum -c "kernup.md5";
-if [ $? == 0 ] ; then
-rm -rf "$Lang_Name";
-rm -rf "kernup.md5";
-LoadSettings;
-bash "$0";
-exit;
-else
-echo -e -n "\E[$Alert;1m$Information \033[0m"; 
-echo -e "\E[$Wow;1m$Abort\033[0m"; 
-exit
-fi
 }
 
 
