@@ -1,6 +1,6 @@
 #!/bin/bash
 
-Version="1.9.2";
+Version="1.9.3";
 AppData="$HOME/.KernUP";
 AppName="kernup";
 AliasName="$HOME/.bash_aliases";
@@ -11,12 +11,12 @@ Core_Url="https://raw.githubusercontent.com/DamiaX/KernUP/master/KernUP";
 MD5_Url="https://raw.githubusercontent.com/DamiaX/KernUP/master/kernup.md5";
 Lang_Name="KernUP.lang";
 SettingFile="setting.kernup";
-Pass='MjA0OAo=';
+Pass='';
 term="/dev/tty";
 RunDir=`echo $PWD`;
 VboxDir='/etc/inid.d/vboxdrv'
 su='0';
-KernelVer='1';
+KernelVer='';
 DecryptPass='';
 
 SaveSettings()
