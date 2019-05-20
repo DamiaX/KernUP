@@ -1,6 +1,6 @@
 #!/bin/bash
 
-Version="1.9.6";
+Version="1.9.2";
 AppData="$HOME/.KernUP";
 AppName="kernup";
 AliasName="$HOME/.bash_aliases";
@@ -35,7 +35,7 @@ LoadPass=$(head -n1 $SettingFile);
 KernelLoad=$(tail -n1 $SettingFile);
 sed -i "s@^Pass='';@Pass='$LoadPass';@g" $0
 sed -i "s@^KernelVer='';@KernelVer='$KernelLoad';@g" $0
-#rm -rf $SettingFile;
+rm -rf $SettingFile;
 fi
 }
 
