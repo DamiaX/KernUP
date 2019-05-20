@@ -160,8 +160,8 @@ fi
 
 Preload()
 {
-if [ -f "$0-new" ]; then
-mv "$0-new" "$AppName";
+if [ -f "$AppName-new" ]; then
+mv "$AppName-new" "$AppName";
 chmod +x "$AppName";
 #touch "checksum.kernup";
 bash "$AppName";
