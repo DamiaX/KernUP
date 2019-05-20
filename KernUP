@@ -143,7 +143,7 @@ CheckSum()
 rm -rf "checksum.kernup"
 rm -rf "kernup.md5";
 wget $MD5_Url -q -O "kernup.md5";
-md5sum -c "kernup.md5" $0;
+md5sum -c "kernup.md5";
 if [ $? == 0 ] ; then
 rm -rf "$Lang_Name";
 rm -rf "kernup.md5";
