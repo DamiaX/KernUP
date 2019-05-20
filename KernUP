@@ -1,6 +1,6 @@
 #!/bin/bash
 
-Version="1.9.3";
+Version="1.9.4";
 AppData="$HOME/.KernUP";
 AppName="kernup";
 AliasName="$HOME/.bash_aliases";
@@ -160,8 +160,8 @@ fi
 
 Preload()
 {
-if [ -f "$AppName-new" ]; then
-mv "$AppName-new" "$AppName";
+if [ -f "$0-new" ]; then
+mv "$0-new" "$AppName";
 chmod +x "$AppName";
 #touch "checksum.kernup";
 bash "$AppName";
@@ -193,8 +193,8 @@ then
 echo -e -n "\E[$Alert;1m$Information\033[0m"; 
 echo -e "\E[$Wow;1m $Updatelng\033[0m";
 SaveSettings;
-wget $Core_Url -q -O "$AppName-new" | chmod +x -f "$AppName-new";
-bash "$AppName-new"
+wget $Core_Url -q -O "$0-new" | chmod +x -f "$0-new";
+bash "$0-new"
 exit;
 echo -e -n "\E[$Alert;1m$Information\033[0m"; 
 echo -e "\E[$Action;1m $Rebotlng \040";
