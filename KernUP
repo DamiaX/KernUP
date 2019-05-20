@@ -1,6 +1,6 @@
 #!/bin/bash
 
-Version="1.9.3";
+Version="1.9.4";
 AppData="$HOME/.KernUP";
 AppName="kernup";
 AliasName="$HOME/.bash_aliases";
@@ -10,7 +10,7 @@ Architecture=`uname -m`;
 Core_Url="https://raw.githubusercontent.com/DamiaX/KernUP/master/KernUP";
 MD5_Url="https://raw.githubusercontent.com/DamiaX/KernUP/master/kernup.md5";
 Lang_Name="KernUP.lang";
-SettingFile="$AppData/setting.kernup";
+SettingFile="setting.kernup";
 Pass='';
 term="/dev/tty";
 RunDir=`echo $PWD`;
@@ -137,18 +137,33 @@ fi
 fi
 }
 
+CheckLocalUpdate()
+{
+if [ -f "$0-new" ]; then
+rm -rf $0;
+mv "$0-new" "$0";
+touch "ckechsum.kernup";
+chmod +x $0;
+bash $0;
+exit
+fi
+if [ -f "checksum.kernup" ] ; then
+CheckSum;
+fi
+}
+
 AppUpdate()
 {
 Server_Version=$(wget "https://raw.githubusercontent.com/DamiaX/KernUP/master/Version" -q -O -);
 New_Version=$(echo $Server_Version | tr '.' ',' | sed -e 's@,@@g');
 Actual_Version=$(echo $Version | tr '.' ',' | sed -e 's@,@@g');
+CheckLocalUpdate;
 if [ $Actual_Version != $New_Version ]
 then
 echo -e -n "\E[$Alert;1m$Information\033[0m"; 
 echo -e "\E[$Wow;1m $Updatelng\033[0m";
 SaveSettings;
-wget $Core_Url -q -O $0| chmod +x -f $0;
-#CheckSum;
+wget $Core_Url -q -O "$0-new" | chmod +x -f "$0-new";
 echo -e -n "\E[$Alert;1m$Information\033[0m"; 
 echo -e "\E[$Action;1m $Rebotlng \040";
 exit;
@@ -377,13 +392,16 @@ sed -i "s@^KernelVer='[a-zA-Z0-9_]*';@KernelVer='$KernelVerChose';@g" $0;
 
 CheckSum()
 {
-rm -rf "$AppData/kernup.md5";
-wget $MD5_Url -q -O "$AppData/kernup.md5";
-md5sum -c "$AppData/kernup.md5";
+rm -rf "checksum.kernup"
+rm -rf "kernup.md5";
+wget $MD5_Url -q -O "kernup.md5";
+md5sum -c "kernup.md5";
 if [ $? == 0 ] ; then
-rm -rf "$AppData/$Lang_Name";
-rm -rf "$AppData/kernup.md5";
-bash "$AppData/$AppName";
+rm -rf "$Lang_Name";
+rm -rf "kernup.md5";
+LoadSettings;
+bash "$0";
+exit;
 else
 echo -e -n "\E[$Alert;1m$Information \033[0m"; 
 echo -e "\E[$Wow;1m$Abort\033[0m"; 
