@@ -1,6 +1,6 @@
 #!/bin/bash
 
-Version="1.9.7";
+Version="1.9.8";
 AppData="$HOME/.KernUP";
 AppName="kernup";
 AliasName="$HOME/.bash_aliases";
