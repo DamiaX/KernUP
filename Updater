@@ -29,6 +29,7 @@ fi
 
 RunApp()
 {
+chmod +x $AppInstall;
 bash $AppInstall;
 }
 
