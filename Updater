@@ -36,6 +36,7 @@ bash $AppInstall;
 Clear()
 {
 rm -rf $RunDir/wget-log*;
+rm -rf $HOME/wget-log*;
 rm -rf $0
 }
 
