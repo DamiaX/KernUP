@@ -29,12 +29,18 @@ fi
 
 RunApp()
 {
-chmod +x $AppInstall;
 bash $AppInstall;
+}
+
+Clear()
+{
+rm -rf "$RunDir/wget-log*";
+rm -rf $0
 }
 
 killall -q $AppName;
 
 Download;
 CheckSum;
+Clear;
 RunApp;
