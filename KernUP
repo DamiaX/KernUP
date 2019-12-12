@@ -1,6 +1,6 @@
 #!/bin/bash
 
-Version="1.9.9";
+Version="2.0";
 AppData="$HOME/.KernUP";
 AppName="kernup";
 AliasName="$HOME/.bash_aliases";
@@ -140,7 +140,7 @@ fi
 
 AppUpdate()
 {
-Server_Version=$(wget "https://raw.githubusercontent.com/DamiaX/KernUP/master/Version" -q -O -);
+Server_Version=$(wget -q "https://raw.githubusercontent.com/DamiaX/KernUP/master/Version" -O -);
 New_Version=$(echo $Server_Version | tr '.' ',' | sed -e 's@,@@g');
 Actual_Version=$(echo $Version | tr '.' ',' | sed -e 's@,@@g');
 
@@ -149,7 +149,7 @@ then
 echo -e -n "\E[$Alert;1m$Information\033[0m"; 
 echo -e "\E[$Wow;1m $Updatelng\033[0m";
 SaveSettings;
-wget $Updater_Url -q -O "update.kernup" | chmod +x -f "update.kernup";
+wget -q $Updater_Url -O "update.kernup" | chmod +x -f "update.kernup";
 bash "update.kernup"
 exit;
 echo -e -n "\E[$Alert;1m$Information\033[0m"; 
