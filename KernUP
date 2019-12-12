@@ -1,6 +1,6 @@
 #!/bin/bash
 
-Version="1.9.8";
+Version="1.9.9";
 AppData="$HOME/.KernUP";
 AppName="kernup";
 AliasName="$HOME/.bash_aliases";
@@ -41,7 +41,6 @@ exit;
 fi
 }
 
-
 Color()
 {
 Alert='33';
@@ -57,7 +56,6 @@ if [ -f $VboxDir ] ; then
 "$VboxDir setup"
 fi;
 }
-
 
 MaskandUnmaskPass()
 {
@@ -82,6 +80,7 @@ fi
 if [ -z $Pass ] ; then 
 echo "$Password" | sudo -S  sh -c "bash $0 $1"
 else
+MaskandUnmaskPass $Pass;
 echo "$DecryptPass" | sudo -S  sh -c "bash $0 $1"
 fi
 exit
@@ -138,8 +137,6 @@ systemctl reboot
 fi
 fi
 }
-
-
 
 AppUpdate()
 {
