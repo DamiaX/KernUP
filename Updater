@@ -3,45 +3,37 @@
 Lang_Name="KernUP.lang";
 AppName="kernup";
 Core_Url="https://raw.githubusercontent.com/DamiaX/KernUP/master/KernUP";
+md5sum="https://raw.githubusercontent.com/DamiaX/KernUP/master/kernup.md5";
 RunDir=`echo $PWD`;
 InstallDir="$HOME/.KernUP";
 AppInstall="$HOME/.KernUP/kernup";
 
-CheckInstall()
-{
-if [ -f $AppInstall ]; then
-rm -rf $AppInstall;
-rm -rf "$InstallDir/$AppName";
-rm -rf "$InstallDir/$Lang_Name";
-rm -rf "$InstallDir/kernup.md5";
-mv "$RunDir/$AppName-new" "$AppInstall";
-bash $AppInstall;
-rm -rf $0;
-exit;
-fi
-}
-
-CheckSum()
-{
-
-rm -rf "$RunDir/$AppName";
-rm -rf "$RunDir/$Lang_Name";
-rm -rf "$RunDir/kernup.md5";
-CheckInstall;
-mv "$RunDir/$AppName-new" "$RunDir/$AppName";
-rm -rf $0;
-bash "$RunDir/$AppName";
-exit;
-
-}
 
 Download()
 {
 wget $Core_Url -q -O "$RunDir/$AppName-new";
-chmod +x "$RunDir/$AppName-new";
+wget $md5sum -q -O "$RunDir/$AppName.md5";
+}
+
+CheckSum()
+{
+md5sum -c "$RunDir/$AppName.md5";
+
+if [ $? = 0 ]
+then
+rm -rf "$AppInstall";
+mv "$RunDir/$AppName-new" "$AppInstall";
+rm -rf "$RunDir/$AppName.md5";
+fi
+}
+
+RunApp()
+{
+bash $AppInstall;
 }
 
 killall -q $AppName;
 
 Download;
 CheckSum;
+RunApp;
