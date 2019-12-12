@@ -11,8 +11,8 @@ AppInstall="$HOME/.KernUP/kernup";
 
 Download()
 {
-wget -q $Core_Url  -O "$RunDir/$AppName-new";
-wget -q $md5sum  -O "$RunDir/$AppName.md5";
+wget -q $Core_Url -O "$RunDir/$AppName-new";
+wget -q $md5sum -O "$RunDir/$AppName.md5";
 }
 
 CheckSum()
